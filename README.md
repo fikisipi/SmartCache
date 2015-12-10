@@ -1,8 +1,6 @@
 ![](logo.png)
 
-[![Build Status](https://travis-ci.org/dimitrovskif/Retrofit-SmartCache.svg?branch=master)](https://travis-ci.org/dimitrovskif/Retrofit-SmartCache)
-
-Retrofit SmartCache - caching system, done right
+Retrofit SmartCache - caching system, done right [![Build Status](https://travis-ci.org/dimitrovskif/Retrofit-SmartCache.svg?branch=master)](https://travis-ci.org/dimitrovskif/Retrofit-SmartCache)
 ==========
 
 *SmartCache* offers some features over the default HTTP based Retrofit caching:
