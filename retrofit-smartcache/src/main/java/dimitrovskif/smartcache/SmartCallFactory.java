@@ -18,6 +18,20 @@ import retrofit.Callback;
 import retrofit.Retrofit;
 
 public class SmartCallFactory implements CallAdapter.Factory {
+    private final Executor executor;
+
+    public SmartCallFactory(){
+        this(null);
+    }
+
+    public SmartCallFactory(Executor executor){
+        if(executor != null) {
+            this.executor = executor;
+        }else{
+            this.executor = new MainThreadExecutor();
+        }
+    }
+
     @Override
     public CallAdapter<SmartCall<?>> get(Type returnType, Annotation[] annotations, Retrofit retrofit) {
         TypeToken<?> token = TypeToken.of(returnType);
@@ -31,7 +45,7 @@ public class SmartCallFactory implements CallAdapter.Factory {
         }
 
         final Type responseType = ((ParameterizedType) returnType).getActualTypeArguments()[0];
-        final Executor callbackExecutor = new MainThreadExecutor();
+        final Executor callbackExecutor = executor;
         return new CallAdapter<SmartCall<?>>() {
             @Override public Type responseType() {
                 return responseType;
@@ -64,7 +78,6 @@ public class SmartCallFactory implements CallAdapter.Factory {
                 req = (Request) createMethod.invoke(requestFactory, new Object[]{args});
             }catch(Exception exc){
                 req = null;
-                Log.e("DroidCallFactory", "Failed to create a Response", exc);
             }
 
             if(callbackExecutor == null){
