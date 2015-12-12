@@ -8,6 +8,7 @@ android:
     - extra-android-m2repository
   licenses:
     - '.+'
-    
+notifications:
+  email: false
 script:
  - chmod +x gradlew && ./gradlew test
