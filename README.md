@@ -6,18 +6,14 @@ SmartCache for Retrofit 2 [![Build Status](https://travis-ci.org/dimitrovskif/Re
 Improved caching support for the Android library we love:
 
 * Memory-based caching
-
 * Instant cache hit (response before the call is even started)
-
 * Adapter/extensibility support
 
-Documentation and installation
-==============================
+### Documentation and installation
 
 TODO
 
-License
-=======
+### License
 
     Copyright 2015 Filip Dimitrovski
 
