@@ -22,6 +22,7 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
+    testCompile 'com.squareup.okhttp:mockwebserver:2.6.0'
     compile 'com.jakewharton:disklrucache:2.0.2'
     compile 'com.squareup.retrofit:retrofit:2.0.0-beta2'
     compile 'com.google.guava:guava:18.0'
