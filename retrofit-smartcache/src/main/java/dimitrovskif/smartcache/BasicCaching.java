@@ -15,6 +15,10 @@ import java.nio.charset.Charset;
 
 import retrofit.Response;
 
+/**
+ * A basic caching system that stores responses in RAM & disk
+ * It uses {@link DiskLruCache} and {@link LruCache} to do the former.
+ */
 public class BasicCaching implements CachingSystem {
     private DiskLruCache diskCache;
     private LruCache<String, Object> memoryCache;
@@ -64,12 +68,14 @@ public class BasicCaching implements CachingSystem {
         String cacheKey = urlToKey(request.url());
         byte[] memoryResponse = (byte[]) memoryCache.get(cacheKey);
         if(memoryResponse != null){
+            Log.d("SmartCall", "Memory hit!");
             return memoryResponse;
         }
 
         try {
             DiskLruCache.Snapshot cacheSnapshot = diskCache.get(cacheKey);
             if(cacheSnapshot != null){
+                Log.d("SmartCall", "Disk hit!");
                 return cacheSnapshot.getString(0).getBytes();
             }else{
                 return null;

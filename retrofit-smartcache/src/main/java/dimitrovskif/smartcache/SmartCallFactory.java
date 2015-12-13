@@ -26,6 +26,13 @@ public class SmartCallFactory implements CallAdapter.Factory {
         executor = new AndroidExecutor();
     }
 
+    /**
+     * Sets a new {@link Executor} that will be used when calling the callbacks
+     */
+    public void setCustomExecutor(Executor executor){
+        this.executor = executor;
+    }
+
     @Override
     public CallAdapter<SmartCall<?>> get(final Type returnType, final Annotation[] annotations,
                                          final Retrofit retrofit) {
