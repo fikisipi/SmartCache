@@ -32,7 +32,9 @@ public class DefaultCachingSystem implements CachingSystem {
         if(cache == null) return;
 
         try {
-            cache.edit(urlToKey(response.raw().request().url())).set(0, new String(rawResponse, Charset.defaultCharset()));
+            DiskLruCache.Editor editor = cache.edit(urlToKey(response.raw().request().url()));
+            editor.set(0, new String(rawResponse, Charset.defaultCharset()));
+            editor.commit();
         }catch(IOException exc){
             Log.e("SmartCall", "", exc);
         }
@@ -40,13 +42,23 @@ public class DefaultCachingSystem implements CachingSystem {
 
     @Override
     public <T> byte[] getFromCache(Request request) {
-        if(cache == null) return null;
+        if(cache == null){
+            Log.e("SmartCall", "Cannot retrieve cache, DiskLru is null.");
+            return null;
+        }
+
         byte[] response;
 
         try {
-            response = cache.get(urlToKey(request.url())).getString(0).getBytes();
-        }catch(IOException | NullPointerException exc){
-            Log.e("CachingSystem", "", exc);
+            String cacheKey = urlToKey(request.url());
+            DiskLruCache.Snapshot cacheSnapshot = cache.get(cacheKey);
+            if(cacheSnapshot != null){
+                response = cacheSnapshot.getString(0).getBytes();
+            }else{
+                response = null;
+            }
+        }catch(IOException exc){
+            Log.e("CachingSystem", "Cannot get this URL from journal.", exc);
             response = null;
         }
 

@@ -118,8 +118,6 @@ public class SmartCallFactory implements CallAdapter.Factory {
                         T convertedData = SmartUtils.bytesToResponse(retrofit, responseType, annotations,
                                 data);
                         callback.onResponse(Response.success(convertedData), retrofit);
-                    }else{
-                        Log.d("SmartCall", "Cache miss!");
                     }
                 }
             });
