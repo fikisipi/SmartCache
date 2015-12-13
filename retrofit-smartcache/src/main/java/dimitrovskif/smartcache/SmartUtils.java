@@ -15,18 +15,22 @@ import retrofit.Response;
 import retrofit.Retrofit;
 
 public final class SmartUtils {
-    public static byte[] responseToBytes(Retrofit retrofit, Response response, Type responseType,
+    /*
+     * TODO: Do an inverse iteration instead so that the latest Factory that supports <T>
+     * does the job?
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> byte[] responseToBytes(Retrofit retrofit, T data, Type dataType,
                                          Annotation[] annotations){
         for(Converter.Factory factory : retrofit.converterFactories()){
             if(factory == null) continue;
-            Converter<Response, RequestBody> converter =
-                    (Converter<Response, RequestBody>)
-                            factory.toRequestBody(responseType, annotations);
+            Converter<T, RequestBody> converter =
+                    (Converter<T, RequestBody>) factory.toRequestBody(dataType, annotations);
 
             if(converter != null){
                 Buffer buff = new Buffer();
                 try {
-                    converter.convert(response).writeTo(buff);
+                    converter.convert(data).writeTo(buff);
                 }catch(IOException ioException){
                     continue;
                 }
@@ -34,6 +38,26 @@ public final class SmartUtils {
                 return buff.readByteArray();
             }
         }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T bytesToResponse(Retrofit retrofit, Type dataType, Annotation[] annotations,
+                                        byte[] data){
+        for(Converter.Factory factory : retrofit.converterFactories()){
+            if(factory == null) continue;
+            Converter<ResponseBody, T> converter =
+                    (Converter<ResponseBody, T>) factory.fromResponseBody(dataType, annotations);
+
+            if(converter != null){
+                try {
+                    return converter.convert(ResponseBody.create(null, data));
+                }catch(IOException | NullPointerException exc){
+                    Log.e("SmartCall", "", exc);
+                }
+            }
+        }
+
         return null;
     }
 }

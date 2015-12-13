@@ -1,28 +1,26 @@
 package dimitrovskif.smartcache;
 
+import android.os.Environment;
 import android.util.Log;
+import android.util.LruCache;
 
 import com.google.common.reflect.TypeToken;
-import com.squareup.okhttp.MediaType;
+import com.jakewharton.disklrucache.DiskLruCache;
 import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.ResponseBody;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.util.concurrent.Executor;
 
-import okio.Buffer;
-import okio.BufferedSink;
-import okio.BufferedSource;
 import retrofit.Call;
 import retrofit.CallAdapter;
 import retrofit.Callback;
-import retrofit.Converter;
 import retrofit.Response;
 import retrofit.Retrofit;
 
@@ -113,41 +111,23 @@ public class SmartCallFactory implements CallAdapter.Factory {
 
         @Override
         public void enqueue(final Callback<T> callback) {
-            final String cachedResponse = "[{\"email\":\"Sincere@april.biz\",\"name\":\"Leanne Graham\",\"id\":1}]";
-
             callbackExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    for(Converter.Factory factory : retrofit.converterFactories()){
-                        if(factory == null) continue;
-                        Converter<ResponseBody, T> converter =
-                                (Converter<ResponseBody, T>)
-                                factory.fromResponseBody(responseType, annotations);
-                        if(converter != null){
-                            try {
-                                T data = converter.convert(ResponseBody.create(null, cachedResponse));
-                                callback.onResponse(Response.success(data), retrofit);
-                            }catch(IOException | NullPointerException exc){
-                                Log.e("SmartCall", "", exc);
-                            }
-                        }
-                    }
+                    callback.onResponse(getFromCache(callback), retrofit);
                 }
             });
 
+            // Enqueue an OkHttp call
             baseCall.enqueue(new Callback<T>() {
                 @Override
                 public void onResponse(final Response<T> response, final Retrofit retrofit) {
+                    // Make a main thread runnable
                     Runnable responseRunnable = new Runnable() {
                         @Override
                         public void run() {
                             if(response.isSuccess()) {
-                                byte[] bytes = SmartUtils.responseToBytes(retrofit, response, responseType(),
-                                        annotations);
-                                if(bytes != null)
-                                Log.d("SmartCall", bytes.toString());
-                                else
-                                    Log.d("SmartCall", "null bytes!");
+                                addInCache(response);
                             }
                             callback.onResponse(response, retrofit);
                         }
@@ -185,6 +165,43 @@ public class SmartCallFactory implements CallAdapter.Factory {
         public SmartCall<T> clone() {
             return new SmartCallImpl<>(callbackExecutor, baseCall.clone(), responseType(),
                     annotations, retrofit);
+        }
+
+        private <T> Response<T> getFromCache(Callback<T> cb){
+            final String cachedResponse = "[{\"email\":\"Sincere@april.biz\",\"name\":\"Leanne Graham\",\"id\":1}]";
+            T data = SmartUtils.bytesToResponse(retrofit, responseType(), annotations,
+                    cachedResponse.getBytes());
+            return Response.success(data);
+        }
+
+        private <T> void addInCache(Response<T> response){
+            byte[] bytes = SmartUtils.responseToBytes(retrofit, response.body(), responseType(),
+                    annotations);
+            if(bytes != null) {
+                // we can cache this thing.
+                DiskLruCache cache;
+                try{
+                    cache = DiskLruCache.open(
+                            new File(Environment.getExternalStorageDirectory(), "smartcache.bin"),
+                            1,
+                            1,
+                            1024 * 1024 * 10
+                    );
+                }catch(IOException exc){
+                    cache = null;
+                }
+
+                if(cache != null){
+                    try {
+                        cache.edit("x038k1").set(0, new String(bytes, Charset.defaultCharset()));
+                    }catch(IOException exc){
+
+                    }
+                }
+            }else {
+                // fuck, we can't cache this.
+                Log.d("SmartCall", "null bytes!");
+            }
         }
     }
 }
