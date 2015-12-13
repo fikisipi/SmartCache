@@ -3,6 +3,7 @@ package dimitrovskif.smartcache;
 import com.google.common.reflect.TypeToken;
 import com.squareup.okhttp.Request;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -18,18 +19,15 @@ import retrofit.Retrofit;
 
 public class SmartCallFactory implements CallAdapter.Factory {
     private final CachingSystem cachingSystem;
-    private Executor executor;
+    private final Executor executor;
 
     public SmartCallFactory(CachingSystem cachingSystem){
         this.cachingSystem = cachingSystem;
-
-        executor = new AndroidExecutor();
+        this.executor = new AndroidExecutor();
     }
 
-    /**
-     * Sets a new {@link Executor} that will be used when calling the callbacks
-     */
-    public void setCustomExecutor(Executor executor){
+    public SmartCallFactory(CachingSystem cachingSystem, Executor executor){
+        this.cachingSystem = cachingSystem;
         this.executor = executor;
     }
 
