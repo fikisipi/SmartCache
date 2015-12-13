@@ -1,7 +1,5 @@
 package dimitrovskif.smartcache;
 
-import android.util.Log;
-
 import com.google.common.reflect.TypeToken;
 import com.squareup.okhttp.Request;
 
@@ -19,21 +17,13 @@ import retrofit.Response;
 import retrofit.Retrofit;
 
 public class SmartCallFactory implements CallAdapter.Factory {
-    private final Executor executor;
-    private CachingSystem cachingSystem;
+    private final CachingSystem cachingSystem;
+    private Executor executor;
 
-    public SmartCallFactory(){
-        this(null);
-    }
+    public SmartCallFactory(CachingSystem cachingSystem){
+        this.cachingSystem = cachingSystem;
 
-    public SmartCallFactory(Executor executor){
-        if(executor != null) {
-            this.executor = executor;
-        }else{
-            this.executor = new MainThreadExecutor();
-        }
-
-        this.cachingSystem = new DefaultCachingSystem();
+        executor = new AndroidExecutor();
     }
 
     @Override

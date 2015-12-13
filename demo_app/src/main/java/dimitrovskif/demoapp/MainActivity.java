@@ -2,11 +2,14 @@ package dimitrovskif.demoapp;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
+import java.io.File;
 import java.util.List;
 
+import dimitrovskif.smartcache.BasicCaching;
 import dimitrovskif.smartcache.SmartCall;
 import dimitrovskif.smartcache.SmartCallFactory;
 import retrofit.Callback;
@@ -39,10 +42,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         textContent = (TextView) findViewById(R.id.textContent);
 
+        SmartCallFactory smartFactory = new SmartCallFactory(BasicCaching.fromCtx(this));
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://jsonplaceholder.typicode.com")
                 .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(new SmartCallFactory())
+                .addCallAdapterFactory(smartFactory)
                 .build();
 
         PlaceholderAPI api = retrofit.create(PlaceholderAPI.class);

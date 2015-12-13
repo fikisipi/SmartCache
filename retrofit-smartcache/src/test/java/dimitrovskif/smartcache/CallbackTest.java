@@ -1,20 +1,13 @@
 package dimitrovskif.smartcache;
 
-import com.google.common.reflect.TypeToken;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
 
 import org.junit.Rule;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
-import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.concurrent.Executor;
 
-import retrofit.Call;
 import retrofit.CallAdapter;
-import retrofit.Callback;
-import retrofit.Response;
 import retrofit.Retrofit;
 
 public class CallbackTest {
@@ -22,12 +15,8 @@ public class CallbackTest {
      * Builds a Retrofit SmartCache factory without Android executor
      */
     private CallAdapter.Factory buildSmartCacheFactory(){
-        SmartCallFactory factory = new SmartCallFactory(new Executor() {
-            @Override
-            public void execute(Runnable command) {
-                command.run();
-            }
-        });
+        SmartCallFactory factory = new SmartCallFactory(BasicCaching.create(null, 0),
+                new MainThreadExecutor());
 
         return factory;
     }
@@ -42,7 +31,14 @@ public class CallbackTest {
                 .addCallAdapterFactory(buildSmartCacheFactory())
                 .build();
         r.create(DemoService.class);
-        
+
+    }
+
+    static class MainThreadExecutor implements Executor{
+        @Override
+        public void execute(Runnable command) {
+            command.run();
+        }
     }
 
     interface DemoService{
