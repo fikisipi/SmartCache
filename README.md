@@ -1,16 +1,28 @@
 ![](logo.png)
 
-Retrofit SmartCache - caching system, done right [![Build Status](https://travis-ci.org/dimitrovskif/Retrofit-SmartCache.svg?branch=master)](https://travis-ci.org/dimitrovskif/Retrofit-SmartCache)
+SmartCache for Retrofit 2 - improved caching support for the library we love [![Build Status](https://travis-ci.org/dimitrovskif/Retrofit-SmartCache.svg?branch=master)](https://travis-ci.org/dimitrovskif/Retrofit-SmartCache)
 ==========
 
-*SmartCache* offers some features over the default HTTP based Retrofit caching:
+*SmartCache* adds **memory-based caching**, **instant offline response** (cache hit before the call is even started!) and **adapter/extensibility support**.
 
-* **Instant response:** The cache hit happens before an actual request is dispatched, unlike Retrofit's cache which waits for network call to finish (or timeout) before serving cache
+Documentation and installation
+==============================
 
-  * How Retrofit/OkHttp works: One request always has one response, so it either gives you the cached data or the network response
-  
-  * How SmartCache works: One request has 2 responses: the cached data is dispatched immediately, and a subsequent network call is tried too
+TODO
 
-* **Memory based caching:** This caching is not on the networking layer, which means memory layout can be preserved - and data can be loaded without slow deserialization/serialization
+License
+=======
 
-* **Extensible system:** Write cache adapters or use `@Cache` annotations
+    Copyright 2015 Filip Dimitrovski
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
