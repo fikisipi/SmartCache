@@ -3,6 +3,8 @@ package dimitrovskif.demoapp;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.TextView;
+
 import java.util.List;
 
 import dimitrovskif.smartcache.SmartCall;
@@ -30,10 +32,12 @@ public class MainActivity extends AppCompatActivity {
         public String email;
     }
 
+    TextView textContent;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        textContent = (TextView) findViewById(R.id.textContent);
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://jsonplaceholder.typicode.com")
@@ -46,9 +50,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Response<List<User>> response, Retrofit retrofit) {
                 if(response.isSuccess()){
-                    new AlertDialog.Builder(MainActivity.this)
-                            .setMessage("Got " + response.body().size() + " users.")
-                            .show();
+                    StringBuilder sb = new StringBuilder();
+                    for(User user : response.body()){
+                        sb.append(user.name).append(" ").append(user.email).append("\n");
+                    }
+                    textContent.setText(sb);
                 }
             }
 

@@ -1,21 +1,15 @@
 package dimitrovskif.smartcache;
 
-import android.os.Environment;
 import android.util.Log;
-import android.util.LruCache;
 
 import com.google.common.reflect.TypeToken;
-import com.jakewharton.disklrucache.DiskLruCache;
 import com.squareup.okhttp.Request;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.nio.charset.Charset;
 import java.util.concurrent.Executor;
 
 import retrofit.Call;
@@ -26,6 +20,7 @@ import retrofit.Retrofit;
 
 public class SmartCallFactory implements CallAdapter.Factory {
     private final Executor executor;
+    private CachingSystem cachingSystem;
 
     public SmartCallFactory(){
         this(null);
@@ -37,6 +32,8 @@ public class SmartCallFactory implements CallAdapter.Factory {
         }else{
             this.executor = new MainThreadExecutor();
         }
+
+        this.cachingSystem = new DefaultCachingSystem();
     }
 
     @Override
@@ -63,7 +60,7 @@ public class SmartCallFactory implements CallAdapter.Factory {
 
             @Override public <R> SmartCall<R> adapt(Call<R> call) {
                 return new SmartCallImpl<>(callbackExecutor, call, responseType(), annotations,
-                        retrofit);
+                        retrofit, cachingSystem);
             }
         };
     }
@@ -74,15 +71,17 @@ public class SmartCallFactory implements CallAdapter.Factory {
         private final Type responseType;
         private final Annotation[] annotations;
         private final Retrofit retrofit;
+        private final CachingSystem cachingSystem;
         private final Request request;
 
         public SmartCallImpl(Executor callbackExecutor, Call<T> baseCall, Type responseType,
-                             Annotation[] annotations, Retrofit retrofit){
+                             Annotation[] annotations, Retrofit retrofit, CachingSystem cachingSystem){
             this.callbackExecutor = callbackExecutor;
             this.baseCall = baseCall;
             this.responseType = responseType;
             this.annotations = annotations;
             this.retrofit = retrofit;
+            this.cachingSystem = cachingSystem;
 
             // This one is a hack but should create a valid Response (which can later be cloned)
             this.request = buildRequestFromCall();
@@ -114,7 +113,14 @@ public class SmartCallFactory implements CallAdapter.Factory {
             callbackExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    callback.onResponse(getFromCache(callback), retrofit);
+                    byte[] data = cachingSystem.getFromCache(buildRequest());
+                    if(data != null) {
+                        T convertedData = SmartUtils.bytesToResponse(retrofit, responseType, annotations,
+                                data);
+                        callback.onResponse(Response.success(convertedData), retrofit);
+                    }else{
+                        Log.d("SmartCall", "Cache miss!");
+                    }
                 }
             });
 
@@ -127,7 +133,9 @@ public class SmartCallFactory implements CallAdapter.Factory {
                         @Override
                         public void run() {
                             if(response.isSuccess()) {
-                                addInCache(response);
+                                byte[] rawData = SmartUtils.responseToBytes(retrofit, response.body(),
+                                        responseType(), annotations);
+                                cachingSystem.addInCache(response, rawData);
                             }
                             callback.onResponse(response, retrofit);
                         }
@@ -164,44 +172,7 @@ public class SmartCallFactory implements CallAdapter.Factory {
         @Override
         public SmartCall<T> clone() {
             return new SmartCallImpl<>(callbackExecutor, baseCall.clone(), responseType(),
-                    annotations, retrofit);
-        }
-
-        private <T> Response<T> getFromCache(Callback<T> cb){
-            final String cachedResponse = "[{\"email\":\"Sincere@april.biz\",\"name\":\"Leanne Graham\",\"id\":1}]";
-            T data = SmartUtils.bytesToResponse(retrofit, responseType(), annotations,
-                    cachedResponse.getBytes());
-            return Response.success(data);
-        }
-
-        private <T> void addInCache(Response<T> response){
-            byte[] bytes = SmartUtils.responseToBytes(retrofit, response.body(), responseType(),
-                    annotations);
-            if(bytes != null) {
-                // we can cache this thing.
-                DiskLruCache cache;
-                try{
-                    cache = DiskLruCache.open(
-                            new File(Environment.getExternalStorageDirectory(), "smartcache.bin"),
-                            1,
-                            1,
-                            1024 * 1024 * 10
-                    );
-                }catch(IOException exc){
-                    cache = null;
-                }
-
-                if(cache != null){
-                    try {
-                        cache.edit("x038k1").set(0, new String(bytes, Charset.defaultCharset()));
-                    }catch(IOException exc){
-
-                    }
-                }
-            }else {
-                // fuck, we can't cache this.
-                Log.d("SmartCall", "null bytes!");
-            }
+                    annotations, retrofit, cachingSystem);
         }
     }
 }
