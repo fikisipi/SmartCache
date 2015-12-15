@@ -6,7 +6,7 @@ SmartCache for Retrofit 2 [![Build Status](https://travis-ci.org/dimitrovskif/Re
 A smarter caching layer for the Android library we all love:
 
 * Memory-based caching
-* Instant cache responses (callback before the network call is even started)
+* Instant cache responses (cache is read before the network request is started)
 * Adapter/extensibility support
 
 ### Documentation and installation
