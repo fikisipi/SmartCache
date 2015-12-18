@@ -1,12 +1,12 @@
 ![SmartCache for Retrofit2](res/logo.png)
 
-SmartCache for Retrofit 2 [![Build Status](https://travis-ci.org/dimitrovskif/Retrofit-SmartCache.svg?branch=master)](https://travis-ci.org/dimitrovskif/Retrofit-SmartCache)
+SmartCache for Retrofit 2 [![Build Status](https://travis-ci.org/dimitrovskif/SmartCache.svg?branch=master)](https://travis-ci.org/dimitrovskif/SmartCache)
 ==========
 
-Improved caching support for the Android library we love:
+A smarter caching layer for the Android library we all love:
 
 * Memory-based caching
-* Instant cache hit (response before the call is even started)
+* Instant cache responses (cache is read before the network request is started)
 * Adapter/extensibility support
 
 ### How it works
