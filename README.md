@@ -1,6 +1,6 @@
 ![SmartCache for Retrofit2](res/logo.png)
 
-SmartCache for Retrofit 2 [![Build Status](https://travis-ci.org/dimitrovskif/SmartCache.svg?branch=master)](https://travis-ci.org/dimitrovskif/SmartCache)
+SmartCache for Retrofit 2 ![Build Status](https://travis-ci.org/dimitrovskif/SmartCache.svg?branch=master)](https://travis-ci.org/dimitrovskif/SmartCache)
 ==========
 
 A smarter caching layer for the Android library we all love:
