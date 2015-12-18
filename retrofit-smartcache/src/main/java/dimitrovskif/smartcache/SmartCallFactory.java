@@ -19,16 +19,16 @@ import retrofit.Retrofit;
 
 public class SmartCallFactory implements CallAdapter.Factory {
     private final CachingSystem cachingSystem;
-    private final Executor executor;
+    private final Executor asyncExecutor;
 
     public SmartCallFactory(CachingSystem cachingSystem){
         this.cachingSystem = cachingSystem;
-        this.executor = new AndroidExecutor();
+        this.asyncExecutor = new AndroidExecutor();
     }
 
     public SmartCallFactory(CachingSystem cachingSystem, Executor executor){
         this.cachingSystem = cachingSystem;
-        this.executor = executor;
+        this.asyncExecutor = executor;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class SmartCallFactory implements CallAdapter.Factory {
         }
 
         final Type responseType = ((ParameterizedType) returnType).getActualTypeArguments()[0];
-        final Executor callbackExecutor = executor;
+        final Executor callbackExecutor = asyncExecutor;
 
         return new CallAdapter<SmartCall<?>>() {
             @Override public Type responseType() {
@@ -166,6 +166,16 @@ public class SmartCallFactory implements CallAdapter.Factory {
         public SmartCall<T> clone() {
             return new SmartCallImpl<>(callbackExecutor, baseCall.clone(), responseType(),
                     annotations, retrofit, cachingSystem);
+        }
+
+        @Override
+        public Response<T> execute() throws IOException {
+            return baseCall.execute();
+        }
+
+        @Override
+        public void cancel() {
+            baseCall.cancel();
         }
     }
 }

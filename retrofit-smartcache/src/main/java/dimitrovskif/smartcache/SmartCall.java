@@ -32,4 +32,23 @@ public interface SmartCall<T>{
      * has already been.
      */
     SmartCall<T> clone();
+
+    /* ================================================================ */
+    /* Now it's time for the blocking methods - which can't be smart :(
+    /* ================================================================ */
+
+    /**
+     * Synchronously send the request and return its response. NOTE: No smart caching allowed!
+     *
+     * @throws IOException if a problem occurred talking to the server.
+     * @throws RuntimeException (and subclasses) if an unexpected error occurs creating the request
+     * or decoding the response.
+     */
+    Response<T> execute() throws IOException;
+
+    /**
+     * Cancel this call. An attempt will be made to cancel in-flight calls, and if the call has not
+     * yet been executed it never will be.
+     */
+    void cancel();
 }

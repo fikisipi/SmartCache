@@ -1,4 +1,4 @@
-![SmartCache for Retrofit2](logo.png)
+![SmartCache for Retrofit2](res/logo.png)
 
 SmartCache for Retrofit 2 [![Build Status](https://travis-ci.org/dimitrovskif/Retrofit-SmartCache.svg?branch=master)](https://travis-ci.org/dimitrovskif/Retrofit-SmartCache)
 ==========
@@ -8,6 +8,12 @@ Improved caching support for the Android library we love:
 * Memory-based caching
 * Instant cache hit (response before the call is even started)
 * Adapter/extensibility support
+
+### How it works
+
+SmartCache isn't constrained by the 1 response per request limit that Retrofit imposes. This means that your asynchronous callbacks will first get called when cache is loaded, and then when the network response is ready.
+
+![SmartCache for Retrofit2](res/how_it_works.png)
 
 ### Documentation and installation
 
