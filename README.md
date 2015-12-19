@@ -11,13 +11,18 @@ A smarter caching layer for the Android library we all love:
 
 ### Documentation and installation
 
-TODO
+[**Documentation and further info is available on the website.**](http://dimitrovskif.github.io/SmartCache/)
 
-### How it works
+Gradle installation:
 
-SmartCache isn't constrained by the 1 response per request limit that Retrofit imposes. This means that your asynchronous callbacks will first get called when cache is loaded, and then when the network response is ready.
-
-![SmartCache for Retrofit2](res/how_it_works.png)
+    repositories {
+        ...
+        maven { url "https://jitpack.io" }
+    }
+    
+    dependencies {
+	        compile 'com.github.dimitrovskif:SmartCache:SNAPSHOT'
+	}
 
 ### License
 
