@@ -1,131 +1,133 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta charset="utf-8">
-    <title>SmartCache for Retrofit 2</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A type-safe HTTP client for Android and Java">
-    <link href="static/bootstrap-combined.min.css" rel="stylesheet">
-    <link href="static/app.css" rel="stylesheet">
-    <link href="static/app-theme.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Roboto:400,300italic,100,100italic,300" rel="stylesheet" type="text/css">
-    <!--[if lt IE 9]><script src="static/html5shiv.min.js"></script><![endif]-->
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SmartCache for Retrofit2</title>
+    
+    <link rel="stylesheet" href="res/flasky.css" type="text/css" />
+    <link rel="top" title="SmartCache for Retrofit2 - Introduction & docs" href="#" />
+    <link rel="next" title="Introduction" href="user/intro/" />
+  
+    <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.0.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:100,200,300,400,600,700&amp;subset=latin,latin-ext" type="text/css" rel="stylesheet" />
+
   </head>
-  <body data-target=".content-nav">
-    <header>
-      <div class="container">
-        <div class="row">
-          <div class="span5">
-            <h1><img src="logo.png" style="height: 80px"/></h1>
-          </div>
-          <div class="span7">
-            <menu>
-              <ul>
-                <li><a href="https://github.com/dimitrovskif/SmartCache" data-title="View GitHub Project" class="menu github">View on GitHub</a></li>
-              </ul>
-            </menu>
-          </div>
-        </div>
-      </div>
-    </header>
-    <section id="subtitle">
-      <div class="container">
-        <div class="row">
-          <div class="span12">
-            <h2>A <strong>caching extension</strong> for Retrofit 2!</h2>
-          </div>
-        </div>
-      </div>
-    </section>
-    <section id="body">
-      <div class="container">
-        <div class="row">
-          <div class="span9">
-            <section id="introduction">
-              <h3>Introduction</h3>
-              <p>SmartCache improves caching support for Retrofit 2:</p>
-              <ul>
-                <li>Memory-based caching</li>
-                <li>Instant cache hit (response before the call is even started)</li>
-                <li>Adapter/extensibility support</li>
-              </ul>
-              <br/>
-              To add it to your project, add the <code>SmartCallFactory</code>:
-              <pre class="prettyprint">SmartCallFactory smartFactory = new SmartCallFactory(BasicCaching.fromCtx(this));
+  <body role="document">
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+            <div class="section" id="requests-http-for-humans">
+                <h1>SmartCache for Retrofit 2</h1>
+                <h2 id="introduction">Introduction</h2>
+<p>SmartCache is a library that offers an additional caching layer for the popular HTTP type-safe client - <a href="http://square.github.io/retrofit/">Retrofit 2</a>.</p>
+<p>Some of the features provided are:</p>
+<ul>
+<li>Memory-based caching</li>
+<li>Instant cache responses (cache is read before the network request is started)</li>
+<li>Adapter/extensibility support</li>
+</ul>
+<p><span class="yellow"><strong>NOTE:</strong> SmartCache is an additional layer of caching, so you can (and should) keep the standard HTTP caching offered by Retrofit.</span></p>
+<h2 id="download-and-use">Download and use</h2>
+<pre><code class="java">compile 'dimitrovskif.sth:2.0.0-beta2'
+</code></pre>
+<p>1. To integrate it in your app, enable the <code class="java">SmartCallFactory</code>:</p>
+<pre><code class="java">SmartCallFactory smartFactory = new SmartCallFactory(BasicCaching.fromCtx(this));
 Retrofit retrofit = new Retrofit.Builder()
     .baseUrl("http://myapi.com")
-    .addCallAdapterFactory(smartFactory)
-    .build();</pre>
-              You should also switch from <code>Call&lt;T&gt;</code> to <code>SmartCall&lt;T&gt;</code> on the calls you want to cache:
-              <pre class="prettyprint">public interface GitHubService {
+    .addCallAdapterFactory(smartFactory) // add this!
+    .build();
+</code></pre>
+<p>2. Replace all your <code class="java">Call&lt;T&gt;</code>s with <code class="java">SmartCall&lt;T&gt;</code>s:</p>
+<pre><code class="java">public interface GitHubService {
   @GET("/users/{user}/repos")
   SmartCall&lt;List&lt;Repo&gt;&gt; listRepos(@Path("user") String user);
-}</pre>
-            </section>
-            <section id="limitations">
-              <h3>Limitations</h3>
-              <p>At the moment, this library doesn't support:
-              <ul>
-                <li>Rx calls</li>
-                <li><code>execute()</code> (blocking calls) which don't make sense</li>
-              </ul>
-              </p>
-</pre>
-            </section>
-          </div>
-          <div class="span3">
-            <div class="content-nav" data-spy="affix" data-offset-top="80">
-              <ul class="nav nav-tabs nav-stacked primary">
-                <li><a href="#introduction">Introduction</a></li>
-                <li><a href="#introduction">Limitations</a></li>
-              </ul>
-              <ul class="nav nav-pills nav-stacked secondary">
-                <li><a href="http://stackoverflow.com/questions/tagged/smartcache?sort=active">StackOverflow</a></li>
-              </ul>
+}
+</code></pre>
+<h2 id="how-it-works">How it works</h2>
+<p>SmartCache isn't constrained by the 1 response per request limit that Retrofit imposes. This means that your asynchronous callbacks will first get called when cache is loaded, and then when the network response is ready.</p>
+<p><img alt="SmartCache for Retrofit2" src="res/how_it_works.png" /></p>
+<h2 id="documentation">Documentation</h2>
+<h4 id="smartcallfactory">SmartCallFactory</h4>
+<pre><code class="java">public SmartCallFactory(CachingSystem cachingSystem);
+</code></pre>
+<p>Instantiates the factory that handles <code class="java">SmartCall</code>s, where <code class="java">cachingSystem</code> is an instance that implements a caching system. This factory should be added to Retrofit using <code class="java">addCallAdapterFactory()</code>:</p>
+<pre><code class="java">Retrofit retrofit = new Retrofit.Builder().addCallAdapterFactory(new MyCachingSystem()).build();
+</code></pre>
+<h4 id="smartcall">SmartCall</h4>
+<p>This interface specifies the call instance that you will get when using your API services.  Methods provided:</p>
+<ul>
+<li><code class="java">void enqueue(Callback&lt;T&gt;)</code> - enqueues a request. <code class="java">callback</code> will be called with cached or networked response</li>
+<li><code class="java">SmartCall&lt;T&gt; clone()</code> - creates an identical call. Useful when you have query params and you don't want to initialize everything again</li>
+<li><code class="java">Response&lt;T&gt; execute()</code> - executes a blocking call (!). <strong>Note:</strong> no smart caching will be done.</li>
+<li><code class="java">void cancel()</code> - cancels the encapsulated request if it hasn't started</li>
+</ul>
+<p>You <strong>must</strong> use <code class="java">SmartCall</code>s when defining your services if you want smart caching:</p>
+<pre><code class="java">interface MyAPI{
+    @GET("/me")
+    SmartCall&lt;User&gt; getMe();
+}
+</code></pre>
+<h4 id="basiccaching">BasicCaching</h4>
+<p>Basic implementation of a caching system that uses memory and disk LRU space to save responses. Caches GET requests only by default.</p>
+<p>Constructing it from a context loads optimal values:</p>
+<pre><code class="java">CachingSystem system = BasicCaching.fromCtx(this); // loads optimal values
+</code></pre>
+<p>If you want to set your own values use the constructor, or override methods:</p>
+<pre><code class="java">CachingSystem system = new BasicCaching(
+    new File(getCacheDir(), "myDir"), // caching dir
+    1024 * 1024, // max disk size
+    50 // max memory entries
+);
+</code></pre>
             </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="span12 logo">
-            <a href="https://github.com/dimitrovskif">Filip Dimitrovski, 2015</a>
+
           </div>
         </div>
       </div>
-    </section>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script src="static/bootstrap.min.js"></script>
-    <script src="static/jquery.smooth-scroll.min.js"></script>
-    <script src="static/jquery-maven-artifact.min.js"></script>
-    <script src="static/prettify.js"></script>
-    <script type="text/javascript">
-      $(function() {
-        // Syntax highlight code blocks.
-        prettyPrint();
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="#"><img class="logo" src="res/logo.png" title="Rezzy the Requests Sea Turtle"/></a></p>
 
-        // Spy on scroll position for real-time updating of current section.
-        $('body').scrollspy();
+            <p>
+            <iframe src="http://ghbtns.com/github-btn.html?user=dimitrovskif&repo=SmartCache&type=watch&count=true&size=large"
+            allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+            </p>
 
-        // Use smooth-scroll for internal links.
-        $('a').smoothScroll();
+            <p>
+              Smarter caching layer on top of Retrofit 2.
+            </p>
 
-        // Enable tooltips on the header nav image items.
-        $('.menu').tooltip({
-          placement: 'bottom',
-          trigger: 'hover',
-          container: 'body',
-          delay: {
-            show: 500,
-            hide: 0
-          }
-        });
+            <h3>Table of contents</h3>
+            <div class="toc">
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#download-and-use">Download and use</a></li>
+<li><a href="#how-it-works">How it works</a></li>
+<li><a href="#documentation">Documentation</a><ul>
+<li><a href="#smartcallfactory">SmartCallFactory</a></li>
+<li><a href="#smartcall">SmartCall</a></li>
+<li><a href="#basiccaching">BasicCaching</a></li>
+</ul>
+</li>
+</ul>
+</div>
 
-        // Look up the latest version of the library.
-        $.fn.artifactVersion('com.squareup.retrofit', 'retrofit', function(version, url) {
-          $('.version').text(version);
-          $('.version-tag').text('v' + version);
-          $('.version-href').attr('href', url);
-        });
-      });
-    </script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2015 Filip Dimitrovski
+    </div>
+    <a href="https://github.com/dimitrovskif/SmartCache"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://camo.githubusercontent.com/121cd7cbdc3e4855075ea8b558508b91ac463ac2/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_green_007200.png"></a>
   </body>
 </html>
