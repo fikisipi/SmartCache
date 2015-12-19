@@ -11,8 +11,6 @@ Some of the features provided are:
 <span class="yellow">**NOTE:** SmartCache is an additional layer of caching, so you can (and should) keep the standard HTTP caching offered by Retrofit.</span>
 
 ## Download and use
-
-    compile 'dimitrovskif.sth:2.0.0-beta2'
     
 1\. To integrate it in your app, enable the `SmartCallFactory`:
 
