@@ -105,8 +105,7 @@ public class SmartCallFactory implements CallAdapter.Factory {
             }
         }
 
-        @Override
-        public void enqueue(final Callback<T> callback) {
+        public void enqueueWithCache(final Callback<T> callback) {
             Runnable enqueueRunnable = new Runnable() {
                 @Override
                 public void run() {
@@ -160,6 +159,35 @@ public class SmartCallFactory implements CallAdapter.Factory {
             };
             Thread enqueueThread = new Thread(enqueueRunnable);
             enqueueThread.start();
+        }
+
+        @Override
+        public void enqueue(final Callback<T> callback) {
+            if(buildRequest().method().equals("GET")){
+                enqueueWithCache(callback);
+            }else{
+                baseCall.enqueue(new Callback<T>() {
+                    @Override
+                    public void onResponse(Response<T> response, Retrofit retrofit) {
+                        callbackExecutor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                callback.onResponse(response, retrofit);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(Throwable t) {
+                        callbackExecutor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                callback.onFailure(t);
+                            }
+                        });
+                    }
+                });
+            }
         }
 
         @Override
