@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/SmartCache.iml" filepath="$PROJECT_DIR$/SmartCache.iml" />
-      <module fileurl="file://$PROJECT_DIR$/demo_app/demo_app.iml" filepath="$PROJECT_DIR$/demo_app/demo_app.iml" />
       <module fileurl="file://$PROJECT_DIR$/retrofit-smartcache/retrofit-smartcache.iml" filepath="$PROJECT_DIR$/retrofit-smartcache/retrofit-smartcache.iml" />
     </modules>
   </component>

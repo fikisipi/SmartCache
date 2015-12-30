@@ -1,5 +1,7 @@
 package dimitrovskif.smartcache;
 
+import android.os.Handler;
+
 import com.google.common.reflect.TypeToken;
 import com.squareup.okhttp.Request;
 
@@ -105,51 +107,59 @@ public class SmartCallFactory implements CallAdapter.Factory {
 
         @Override
         public void enqueue(final Callback<T> callback) {
-            callbackExecutor.execute(new Runnable() {
+            Runnable enqueueRunnable = new Runnable() {
                 @Override
                 public void run() {
+                    /* Read cache */
                     byte[] data = cachingSystem.getFromCache(buildRequest());
                     if(data != null) {
-                        T convertedData = SmartUtils.bytesToResponse(retrofit, responseType, annotations,
+                        final T convertedData = SmartUtils.bytesToResponse(retrofit, responseType, annotations,
                                 data);
-                        callback.onResponse(Response.success(convertedData), retrofit);
-                    }
-                }
-            });
-
-            // Enqueue an OkHttp call
-            baseCall.enqueue(new Callback<T>() {
-                @Override
-                public void onResponse(final Response<T> response, final Retrofit retrofit) {
-                    // Make a main thread runnable
-                    Runnable responseRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            if(response.isSuccess()) {
-                                byte[] rawData = SmartUtils.responseToBytes(retrofit, response.body(),
-                                        responseType(), annotations);
-                                cachingSystem.addInCache(response, rawData);
+                        Runnable cacheCallbackRunnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                callback.onResponse(Response.success(convertedData), retrofit);
                             }
-                            callback.onResponse(response, retrofit);
-                        }
-                    };
+                        };
+                        callbackExecutor.execute(cacheCallbackRunnable);
+                    }
 
-                    // Run it on the proper thread
-                    callbackExecutor.execute(responseRunnable);
-                }
-
-                @Override
-                public void onFailure(final Throwable t) {
-                    Runnable failureRunnable = new Runnable() {
+                    /* Enqueue actual network call */
+                    baseCall.enqueue(new Callback<T>() {
                         @Override
-                        public void run() {
-                            callback.onFailure(t);
+                        public void onResponse(final Response<T> response, final Retrofit retrofit) {
+                            // Make a main thread runnable
+                            Runnable responseRunnable = new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (response.isSuccess()) {
+                                        byte[] rawData = SmartUtils.responseToBytes(retrofit, response.body(),
+                                                responseType(), annotations);
+                                        cachingSystem.addInCache(response, rawData);
+                                    }
+                                    callback.onResponse(response, retrofit);
+                                }
+                            };
+                            // Run it on the proper thread
+                            callbackExecutor.execute(responseRunnable);
                         }
-                    };
 
-                    callbackExecutor.execute(failureRunnable);
+                        @Override
+                        public void onFailure(final Throwable t) {
+                            Runnable failureRunnable = new Runnable() {
+                                @Override
+                                public void run() {
+                                    callback.onFailure(t);
+                                }
+                            };
+                            callbackExecutor.execute(failureRunnable);
+                        }
+                    });
+
                 }
-            });
+            };
+            Thread enqueueThread = new Thread(enqueueRunnable);
+            enqueueThread.start();
         }
 
         @Override
