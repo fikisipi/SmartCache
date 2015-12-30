@@ -14,15 +14,16 @@ Async caching layer for the Android library we all love:
 [**Documentation and further info is available on the website.**](http://dimitrovskif.github.io/SmartCache/)
 
 Gradle installation:
-
-    repositories {
-        ...
-        maven { url "https://jitpack.io" }
-    }
+```groovy
+repositories {
+    ...
+    maven { url "https://jitpack.io" }
+}
     
-    dependencies {
-	        compile 'com.github.dimitrovskif:SmartCache:SNAPSHOT'
-	}
+dependencies {
+    compile 'com.github.dimitrovskif:SmartCache:SNAPSHOT'
+}
+```
 
 ### License
 
