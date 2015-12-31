@@ -168,7 +168,7 @@ public class SmartCallFactory implements CallAdapter.Factory {
             }else{
                 baseCall.enqueue(new Callback<T>() {
                     @Override
-                    public void onResponse(Response<T> response, Retrofit retrofit) {
+                    public void onResponse(final Response<T> response, final Retrofit retrofit) {
                         callbackExecutor.execute(new Runnable() {
                             @Override
                             public void run() {
@@ -178,7 +178,7 @@ public class SmartCallFactory implements CallAdapter.Factory {
                     }
 
                     @Override
-                    public void onFailure(Throwable t) {
+                    public void onFailure(final Throwable t) {
                         callbackExecutor.execute(new Runnable() {
                             @Override
                             public void run() {
