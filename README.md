@@ -21,7 +21,7 @@ repositories {
 }
     
 dependencies {
-    compile 'com.github.dimitrovskif:SmartCache:SNAPSHOT'
+    compile 'com.github.dimitrovskif:SmartCache:0.1'
 }
 ```
 
