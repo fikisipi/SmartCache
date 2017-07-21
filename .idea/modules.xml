@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/SmartCache.iml" filepath="$PROJECT_DIR$/SmartCache.iml" />
       <module fileurl="file://$PROJECT_DIR$/retrofit-smartcache/retrofit-smartcache.iml" filepath="$PROJECT_DIR$/retrofit-smartcache/retrofit-smartcache.iml" />
+      <module fileurl="file://$PROJECT_DIR$/retrofit-smartcache/retrofit-smartcache.iml" filepath="$PROJECT_DIR$/retrofit-smartcache/retrofit-smartcache.iml" />
     </modules>
   </component>
 </project>

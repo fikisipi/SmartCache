@@ -12,6 +12,7 @@
             <option value="$PROJECT_DIR$/retrofit-smartcache" />
           </set>
         </option>
+        <option name="resolveModulePerSourceSet" value="false" />
       </GradleProjectSettings>
     </option>
   </component>
