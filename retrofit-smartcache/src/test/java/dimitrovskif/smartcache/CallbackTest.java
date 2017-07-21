@@ -8,6 +8,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -46,11 +47,14 @@ public class CallbackTest {
                 .build();
         DemoService demoService = r.create(DemoService.class);
 
+
+        final Logger log = Logger.getLogger("test_logger");
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Response<String>> responseRef = new AtomicReference<>();
         demoService.getHome().enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
+                log.info("Got a response. Should be a network hit (no cache the first time).");
                 responseRef.set(response);
                 latch.countDown();
             }
@@ -62,7 +66,6 @@ public class CallbackTest {
         });
         assertTrue(latch.await(1, TimeUnit.SECONDS));
         assertEquals(responseRef.get().body(), "VERY_BASIC_BODY");
-
         final CountDownLatch latch2 = new CountDownLatch(2);
         final AtomicReference<Response<String>> response2Ref = new AtomicReference<>();
         demoService.getHome().enqueue(new Callback<String>() {
@@ -70,8 +73,10 @@ public class CallbackTest {
             public void onResponse(Call<String> call, Response<String> response) {
                 latch2.countDown();
                 if(latch2.getCount() == 1){ // the cache hit one.
+                    log.info("Got a response. Should be a cache hit.");
                     response2Ref.set(response);
                 }else{ // the network one.
+                    log.info("Got a response. Should be a real network hit.");
                     assertEquals(response.body(), response2Ref.get().body());
                 }
             }
