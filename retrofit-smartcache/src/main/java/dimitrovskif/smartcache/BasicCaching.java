@@ -6,14 +6,14 @@ import android.util.LruCache;
 
 import com.google.common.hash.Hashing;
 import com.jakewharton.disklrucache.DiskLruCache;
-import com.squareup.okhttp.Request;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
 
-import retrofit.Response;
+import okhttp3.Request;
+import retrofit2.Response;
 
 /**
  * A basic caching system that stores responses in RAM & disk
@@ -51,11 +51,11 @@ public class BasicCaching implements CachingSystem {
 
     @Override
     public <T> void addInCache(Response<T> response, byte[] rawResponse) {
-        String cacheKey = urlToKey(response.raw().request().url());
+        String cacheKey = urlToKey(response.raw().request().url().url());
         memoryCache.put(cacheKey, rawResponse);
 
         try {
-            DiskLruCache.Editor editor = diskCache.edit(urlToKey(response.raw().request().url()));
+            DiskLruCache.Editor editor = diskCache.edit(urlToKey(response.raw().request().url().url()));
             editor.set(0, new String(rawResponse, Charset.defaultCharset()));
             editor.commit();
         }catch(IOException exc){
@@ -65,7 +65,7 @@ public class BasicCaching implements CachingSystem {
 
     @Override
     public <T> byte[] getFromCache(Request request) {
-        String cacheKey = urlToKey(request.url());
+        String cacheKey = urlToKey(request.url().url());
         byte[] memoryResponse = (byte[]) memoryCache.get(cacheKey);
         if(memoryResponse != null){
             Log.d("SmartCall", "Memory hit!");

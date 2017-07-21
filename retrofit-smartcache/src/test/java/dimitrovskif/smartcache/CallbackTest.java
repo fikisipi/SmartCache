@@ -1,8 +1,5 @@
 package dimitrovskif.smartcache;
 
-import com.squareup.okhttp.mockwebserver.MockResponse;
-import com.squareup.okhttp.mockwebserver.MockWebServer;
-
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -12,11 +9,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import retrofit.CallAdapter;
-import retrofit.Callback;
-import retrofit.Response;
-import retrofit.Retrofit;
-import retrofit.http.GET;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import retrofit2.Call;
+import retrofit2.CallAdapter;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.http.GET;
 
 import static org.junit.Assert.*;
 
@@ -50,13 +50,13 @@ public class CallbackTest {
         final AtomicReference<Response<String>> responseRef = new AtomicReference<>();
         demoService.getHome().enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Response<String> response, Retrofit retrofit) {
+            public void onResponse(Call<String> call, Response<String> response) {
                 responseRef.set(response);
                 latch.countDown();
             }
 
             @Override
-            public void onFailure(Throwable t) {
+            public void onFailure(Call<String> call, Throwable t) {
                 fail("Failure executing the request.");
             }
         });
@@ -67,7 +67,7 @@ public class CallbackTest {
         final AtomicReference<Response<String>> response2Ref = new AtomicReference<>();
         demoService.getHome().enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Response<String> response, Retrofit retrofit) {
+            public void onResponse(Call<String> call, Response<String> response) {
                 latch2.countDown();
                 if(latch2.getCount() == 1){ // the cache hit one.
                     response2Ref.set(response);
@@ -77,7 +77,7 @@ public class CallbackTest {
             }
 
             @Override
-            public void onFailure(Throwable t) {
+            public void onFailure(Call<String> call, Throwable t) {
                 fail("Failure executing the request.");
             }
         });

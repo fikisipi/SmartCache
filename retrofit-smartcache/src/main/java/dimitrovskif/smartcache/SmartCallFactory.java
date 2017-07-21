@@ -3,7 +3,6 @@ package dimitrovskif.smartcache;
 import android.os.Handler;
 
 import com.google.common.reflect.TypeToken;
-import com.squareup.okhttp.Request;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -13,13 +12,14 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.concurrent.Executor;
 
-import retrofit.Call;
-import retrofit.CallAdapter;
-import retrofit.Callback;
-import retrofit.Response;
-import retrofit.Retrofit;
+import okhttp3.Request;
+import retrofit2.Call;
+import retrofit2.CallAdapter;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
-public class SmartCallFactory implements CallAdapter.Factory {
+public class SmartCallFactory extends CallAdapter.Factory {
     private final CachingSystem cachingSystem;
     private final Executor asyncExecutor;
 
@@ -34,7 +34,7 @@ public class SmartCallFactory implements CallAdapter.Factory {
     }
 
     @Override
-    public CallAdapter<SmartCall<?>> get(final Type returnType, final Annotation[] annotations,
+    public CallAdapter<?, ?> get(final Type returnType, final Annotation[] annotations,
                                          final Retrofit retrofit) {
 
         TypeToken<?> token = TypeToken.of(returnType);
@@ -50,19 +50,21 @@ public class SmartCallFactory implements CallAdapter.Factory {
         final Type responseType = ((ParameterizedType) returnType).getActualTypeArguments()[0];
         final Executor callbackExecutor = asyncExecutor;
 
-        return new CallAdapter<SmartCall<?>>() {
-            @Override public Type responseType() {
+        return new CallAdapter<Object, SmartCall<?>>() {
+            @Override
+            public Type responseType() {
                 return responseType;
             }
 
-            @Override public <R> SmartCall<R> adapt(Call<R> call) {
+            @Override
+            public SmartCall<?> adapt(Call<Object> call) {
                 return new SmartCallImpl<>(callbackExecutor, call, responseType(), annotations,
                         retrofit, cachingSystem);
             }
         };
     }
 
-    static class SmartCallImpl<T> implements SmartCall<T>{
+    static class SmartCallImpl<T> implements SmartCall<T>, Call<T>{
         private final Executor callbackExecutor;
         private final Call<T> baseCall;
         private final Type responseType;
@@ -70,6 +72,21 @@ public class SmartCallFactory implements CallAdapter.Factory {
         private final Retrofit retrofit;
         private final CachingSystem cachingSystem;
         private final Request request;
+
+        @Override
+        public boolean isExecuted() {
+            return false;
+        }
+
+        @Override
+        public boolean isCanceled() {
+            return false;
+        }
+
+        @Override
+        public Request request() {
+            return request;
+        }
 
         public SmartCallImpl(Executor callbackExecutor, Call<T> baseCall, Type responseType,
                              Annotation[] annotations, Retrofit retrofit, CachingSystem cachingSystem){
@@ -89,20 +106,7 @@ public class SmartCallFactory implements CallAdapter.Factory {
          * * @return A valid Request (that contains query parameters, right method and endpoint)
          */
         private Request buildRequestFromCall(){
-            try {
-                Field argsField = baseCall.getClass().getDeclaredField("args");
-                argsField.setAccessible(true);
-                Object[] args = (Object[]) argsField.get(baseCall);
-
-                Field requestFactoryField = baseCall.getClass().getDeclaredField("requestFactory");
-                requestFactoryField.setAccessible(true);
-                Object requestFactory = requestFactoryField.get(baseCall);
-                Method createMethod = requestFactory.getClass().getDeclaredMethod("create", Object[].class);
-                createMethod.setAccessible(true);
-                return (Request) createMethod.invoke(requestFactory, new Object[]{args});
-            }catch(Exception exc){
-                return null;
-            }
+            return baseCall.request();
         }
 
         public void enqueueWithCache(final Callback<T> callback) {
@@ -117,7 +121,7 @@ public class SmartCallFactory implements CallAdapter.Factory {
                         Runnable cacheCallbackRunnable = new Runnable() {
                             @Override
                             public void run() {
-                                callback.onResponse(Response.success(convertedData), retrofit);
+                                callback.onResponse(baseCall, Response.success(convertedData));
                             }
                         };
                         callbackExecutor.execute(cacheCallbackRunnable);
@@ -126,17 +130,17 @@ public class SmartCallFactory implements CallAdapter.Factory {
                     /* Enqueue actual network call */
                     baseCall.enqueue(new Callback<T>() {
                         @Override
-                        public void onResponse(final Response<T> response, final Retrofit retrofit) {
+                        public void onResponse(final Call<T> call, final Response<T> response) {
                             // Make a main thread runnable
                             Runnable responseRunnable = new Runnable() {
                                 @Override
                                 public void run() {
-                                    if (response.isSuccess()) {
+                                    if (response.isSuccessful()) {
                                         byte[] rawData = SmartUtils.responseToBytes(retrofit, response.body(),
                                                 responseType(), annotations);
                                         cachingSystem.addInCache(response, rawData);
                                     }
-                                    callback.onResponse(response, retrofit);
+                                    callback.onResponse(call, response);
                                 }
                             };
                             // Run it on the proper thread
@@ -144,11 +148,11 @@ public class SmartCallFactory implements CallAdapter.Factory {
                         }
 
                         @Override
-                        public void onFailure(final Throwable t) {
+                        public void onFailure(final Call<T> call, final Throwable t) {
                             Runnable failureRunnable = new Runnable() {
                                 @Override
                                 public void run() {
-                                    callback.onFailure(t);
+                                    callback.onFailure(call, t);
                                 }
                             };
                             callbackExecutor.execute(failureRunnable);
@@ -168,21 +172,21 @@ public class SmartCallFactory implements CallAdapter.Factory {
             }else{
                 baseCall.enqueue(new Callback<T>() {
                     @Override
-                    public void onResponse(final Response<T> response, final Retrofit retrofit) {
+                    public void onResponse(final Call<T> call, final Response<T> response) {
                         callbackExecutor.execute(new Runnable() {
                             @Override
                             public void run() {
-                                callback.onResponse(response, retrofit);
+                                callback.onResponse(call, response);
                             }
                         });
                     }
 
                     @Override
-                    public void onFailure(final Throwable t) {
+                    public void onFailure(final Call<T> call, final Throwable t) {
                         callbackExecutor.execute(new Runnable() {
                             @Override
                             public void run() {
-                                callback.onFailure(t);
+                                callback.onFailure(call, t);
                             }
                         });
                     }
@@ -201,7 +205,7 @@ public class SmartCallFactory implements CallAdapter.Factory {
         }
 
         @Override
-        public SmartCall<T> clone() {
+        public Call<T> clone() {
             return new SmartCallImpl<>(callbackExecutor, baseCall.clone(), responseType(),
                     annotations, retrofit, cachingSystem);
         }

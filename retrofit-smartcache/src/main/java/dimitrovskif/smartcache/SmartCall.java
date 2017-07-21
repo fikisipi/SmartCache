@@ -1,12 +1,13 @@
 package dimitrovskif.smartcache;
 
-import com.squareup.okhttp.Request;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
 
-import retrofit.Callback;
-import retrofit.Response;
+import okhttp3.Request;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public interface SmartCall<T>{
     /**
@@ -31,7 +32,7 @@ public interface SmartCall<T>{
      * Create a new, identical call to this one which can be enqueued or executed even if this call
      * has already been.
      */
-    SmartCall<T> clone();
+    Call<T> clone();
 
     /* ================================================================ */
     /* Now it's time for the blocking methods - which can't be smart :(

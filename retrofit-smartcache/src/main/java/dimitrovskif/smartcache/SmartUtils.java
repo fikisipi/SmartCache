@@ -2,17 +2,16 @@ package dimitrovskif.smartcache;
 
 import android.util.Log;
 
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.ResponseBody;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import okio.Buffer;
-import retrofit.Converter;
-import retrofit.Response;
-import retrofit.Retrofit;
+import retrofit2.Converter;
+import retrofit2.Retrofit;
 
 public final class SmartUtils {
     /*
@@ -25,7 +24,8 @@ public final class SmartUtils {
         for(Converter.Factory factory : retrofit.converterFactories()){
             if(factory == null) continue;
             Converter<T, RequestBody> converter =
-                    (Converter<T, RequestBody>) factory.toRequestBody(dataType, annotations);
+                    (Converter<T, RequestBody>) factory.requestBodyConverter(dataType, annotations,
+                            null, retrofit);
 
             if(converter != null){
                 Buffer buff = new Buffer();
@@ -47,7 +47,8 @@ public final class SmartUtils {
         for(Converter.Factory factory : retrofit.converterFactories()){
             if(factory == null) continue;
             Converter<ResponseBody, T> converter =
-                    (Converter<ResponseBody, T>) factory.fromResponseBody(dataType, annotations);
+                    (Converter<ResponseBody, T>) factory.responseBodyConverter(dataType, annotations,
+                            retrofit);
 
             if(converter != null){
                 try {
