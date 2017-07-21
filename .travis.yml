@@ -3,8 +3,8 @@ jdk:
  - oraclejdk7
 android:
   components:
-    - build-tools-23.0.1
-    - android-23
+    - build-tools-25.0.0
+    - android-25
     - extra-android-m2repository
   licenses:
     - '.+'
