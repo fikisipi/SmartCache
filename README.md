@@ -3,11 +3,13 @@
 SmartCache for Retrofit 2 [![Build Status](https://travis-ci.org/dimitrovskif/SmartCache.svg?branch=master)](https://travis-ci.org/dimitrovskif/SmartCache)
 ==========
 
-Async caching layer for the Android library we all love:
-
-* Instant cache read (cache is loaded asynchronously, before the network request is started)
 * Memory-based caching
 * Adapter/extensibility support
+* Asynchronous cache
+
+### The principle behind async cache
+
+One request corresponds to **two** responses: a cache response and a network response. Usually, loading content from your phone is faster than loading from network; therefore your app may show stale content while waiting for a network response.
 
 ### Documentation and installation
 
@@ -21,7 +23,7 @@ repositories {
 }
     
 dependencies {
-    compile 'com.github.dimitrovskif:SmartCache:0.1'
+    compile 'com.github.dimitrovskif:SmartCache:0.2'
 }
 ```
 
