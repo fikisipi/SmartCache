@@ -2,8 +2,6 @@ package dimitrovskif.smartcache;
 
 import android.os.Handler;
 
-import com.google.common.reflect.TypeToken;
-
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -13,6 +11,7 @@ import java.lang.reflect.Type;
 import java.util.concurrent.Executor;
 
 import okhttp3.Request;
+import okio.Timeout;
 import retrofit2.Call;
 import retrofit2.CallAdapter;
 import retrofit2.Callback;
@@ -36,9 +35,8 @@ public class SmartCallFactory extends CallAdapter.Factory {
     @Override
     public CallAdapter<?, ?> get(final Type returnType, final Annotation[] annotations,
                                          final Retrofit retrofit) {
-
-        TypeToken<?> token = TypeToken.of(returnType);
-        if (token.getRawType() != SmartCall.class) {
+        Class<?> cls = getRawType(returnType);
+        if (cls != SmartCall.class) {
             return null;
         }
 
@@ -72,6 +70,11 @@ public class SmartCallFactory extends CallAdapter.Factory {
         private final Retrofit retrofit;
         private final CachingSystem cachingSystem;
         private final Request request;
+
+        @Override
+        public Timeout timeout() {
+            return baseCall.timeout();
+        }
 
         @Override
         public boolean isExecuted() {

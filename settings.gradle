@@ -1,1 +1,2 @@
 include ':retrofit-smartcache'
+include ':demoapp'

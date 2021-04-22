@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 import android.util.LruCache;
 
-import com.google.common.hash.Hashing;
 import com.jakewharton.disklrucache.DiskLruCache;
 
 import java.io.File;
@@ -86,6 +85,6 @@ public class BasicCaching implements CachingSystem {
     }
 
     private String urlToKey(URL url){
-        return Hashing.sha1().hashString(url.toString(), Charset.defaultCharset()).toString();
+        return String.valueOf(url.toString().hashCode());
     }
 }
