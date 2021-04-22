@@ -1,6 +1,6 @@
 package dimitrovskif.smartcache;
 
-import android.os.Handler;
+import android.content.Context;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -10,6 +10,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.concurrent.Executor;
 
+import okhttp3.Headers;
 import okhttp3.Request;
 import okio.Timeout;
 import retrofit2.Call;
@@ -30,6 +31,10 @@ public class SmartCallFactory extends CallAdapter.Factory {
     public SmartCallFactory(CachingSystem cachingSystem, Executor executor){
         this.cachingSystem = cachingSystem;
         this.asyncExecutor = executor;
+    }
+
+    public static SmartCallFactory createBasic(Context ctx) {
+        return new SmartCallFactory(BasicCaching.fromCtx(ctx));
     }
 
     @Override
@@ -124,7 +129,9 @@ public class SmartCallFactory extends CallAdapter.Factory {
                         Runnable cacheCallbackRunnable = new Runnable() {
                             @Override
                             public void run() {
-                                callback.onResponse(baseCall, Response.success(convertedData));
+                                Headers headers = Headers.of("Is-Retrofit-SmartCached", "true");
+                                Response<T> resp = Response.success(convertedData, headers);
+                                callback.onResponse(baseCall, resp);
                             }
                         };
                         callbackExecutor.execute(cacheCallbackRunnable);
@@ -172,7 +179,7 @@ public class SmartCallFactory extends CallAdapter.Factory {
         public void enqueue(final Callback<T> callback) {
             if(buildRequest().method().equals("GET")){
                 enqueueWithCache(callback);
-            }else{
+            } else {
                 baseCall.enqueue(new Callback<T>() {
                     @Override
                     public void onResponse(final Call<T> call, final Response<T> response) {

@@ -3,22 +3,20 @@ package com.retrofitdemo;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.RecyclerView;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
+import dimitrovskif.smartcache.BasicCaching;
 import dimitrovskif.smartcache.SmartCall;
+import dimitrovskif.smartcache.SmartCallFactory;
+import dimitrovskif.smartcache.SmartNetwork;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -28,16 +26,13 @@ import retrofit2.http.GET;
 
 public class MainActivity extends Activity {
     static class Comment {
-        public String email = "empty";
-        public String body = "empty";
-        public Comment(String _email, String _body) {
-            email = _email; body = _body;
-        }
+        public String email;
+        public String body;
     }
 
-    public interface CommentSvc {
+    public interface CommentAPI {
         @GET("comments")
-        Call<List<Comment>> getComments();
+        SmartCall<List<Comment>> getComments();
     }
 
     @Override
@@ -45,35 +40,55 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final ListView demoList = findViewById(R.id.demoList);
-        final CommentAdapter adapter = new CommentAdapter(this);
-        demoList.setAdapter(adapter);
-
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://mockbin.org/bin/ec4a0020-37d0-4221-b4fd-7002000b2019/")
                 .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(SmartCallFactory.createBasic(this))
                 .build();
 
-        CommentSvc service = retrofit.create(CommentSvc.class);
-        service.getComments().enqueue(new Callback<List<Comment>>() {
-            @Override
-            public void onResponse(Call<List<Comment>> call, Response<List<Comment>> response) {
-                List<Comment> l = response.body();
-                runOnUiThread(() -> {
-                    if(l == null) return;
-                    Log.w("Filip", String.valueOf(l.size()));
-                    adapter.addAll(l);
-                });
-            }
+        CommentAPI service = retrofit.create(CommentAPI.class);
 
-            @Override
-            public void onFailure(Call<List<Comment>> call, Throwable t) {
-                Log.w("Filip", t.getMessage());
-            }
+        Runnable loadComments = () -> {
+            service.getComments().enqueue(new Callback<List<Comment>>() {
+                @Override
+                public void onResponse(Call<List<Comment>> call, Response<List<Comment>> response) {
+                    if(SmartNetwork.isResponseFromNetwork(response)) {
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+
+                    List<Comment> comments = response.body();
+                    if (comments != null) {
+                        runOnUiThread(() -> {
+                            commentAdapter.addAll(comments);
+                        });
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<Comment>> call, Throwable t) {
+                    Log.w("Filip", t.getMessage());
+                }
+            });
+        };
+
+        loadComments.run();
+
+        this.swipeRefreshLayout = findViewById(R.id.swipe_refresh);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            commentAdapter.clear();
+            loadComments.run();
         });
+        swipeRefreshLayout.setRefreshing(true);
+
+        this.commentAdapter = new CommentAdapter(this);
+        ListView commentListView = findViewById(R.id.demoList);
+        commentListView.setAdapter(commentAdapter);
     }
 
-    class CommentAdapter extends ArrayAdapter<Comment>{
+    private CommentAdapter commentAdapter = null;
+    private SwipeRefreshLayout swipeRefreshLayout = null;
+
+    private static class CommentAdapter extends ArrayAdapter<Comment>{
         CommentAdapter(Context ctx) {
             super(ctx, R.layout.comment_row, R.id.comment_text);
         }

@@ -24,10 +24,15 @@
             android:paddingBottom="20dp"
              />
 
-        <ListView
-            android:id="@+id/demoList"
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swipe_refresh"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent">
+            <ListView
+                android:id="@+id/demoList"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </android.support.v4.widget.SwipeRefreshLayout>
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>
