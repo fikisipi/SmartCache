@@ -13,7 +13,6 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import dimitrovskif.smartcache.BasicCaching;
 import dimitrovskif.smartcache.SmartCall;
 import dimitrovskif.smartcache.SmartCallFactory;
 import dimitrovskif.smartcache.SmartNetwork;
@@ -25,12 +24,13 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
 
 public class MainActivity extends Activity {
+
     static class Comment {
         public String email;
         public String body;
     }
 
-    public interface CommentAPI {
+    public interface CommentAPI { // if mockbin.org is down, use your own JSON [{email, body}, ...] API
         @GET("comments")
         SmartCall<List<Comment>> getComments();
     }
@@ -49,10 +49,12 @@ public class MainActivity extends Activity {
         CommentAPI service = retrofit.create(CommentAPI.class);
 
         Runnable loadComments = () -> {
+            // Call API and put response into a ListView
             service.getComments().enqueue(new Callback<List<Comment>>() {
                 @Override
                 public void onResponse(Call<List<Comment>> call, Response<List<Comment>> response) {
                     if(SmartNetwork.isResponseFromNetwork(response)) {
+                        // If response is not cached, stop the loading circle animation
                         swipeRefreshLayout.setRefreshing(false);
                     }
 
@@ -74,14 +76,14 @@ public class MainActivity extends Activity {
         loadComments.run();
 
         this.swipeRefreshLayout = findViewById(R.id.swipe_refresh);
-        swipeRefreshLayout.setOnRefreshListener(() -> {
+        this.swipeRefreshLayout.setOnRefreshListener(() -> {
             commentAdapter.clear();
             loadComments.run();
         });
-        swipeRefreshLayout.setRefreshing(true);
+        this.swipeRefreshLayout.setRefreshing(true);
 
         this.commentAdapter = new CommentAdapter(this);
-        ListView commentListView = findViewById(R.id.demoList);
+        final ListView commentListView = findViewById(R.id.demoList);
         commentListView.setAdapter(commentAdapter);
     }
 
@@ -95,10 +97,10 @@ public class MainActivity extends Activity {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
+            Comment comment = getItem(position);
             View row = super.getView(position, convertView, parent);
-            Comment comm = getItem(position);
-            ((TextView)row.findViewById(R.id.comment_text)).setText(comm.body);
-            ((TextView)row.findViewById(R.id.email)).setText(comm.email);
+            ((TextView)row.findViewById(R.id.comment_text)).setText(comment.body);
+            ((TextView)row.findViewById(R.id.email)).setText(comment.email);
             return row;
         }
     }
