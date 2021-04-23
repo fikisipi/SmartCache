@@ -84,6 +84,7 @@ public class BasicCaching implements CachingSystem {
         }
     }
 
+    @Override
     public void clearCache() {
         memoryCache.evictAll();
         try {
