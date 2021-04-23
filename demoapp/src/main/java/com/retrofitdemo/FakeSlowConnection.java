@@ -12,7 +12,7 @@ public class FakeSlowConnection {
             @Override
             public Response intercept(Chain chain) throws IOException {
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(1000);
                 } catch(InterruptedException exc){
                   return null;
                 }

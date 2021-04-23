@@ -12,6 +12,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 
@@ -61,8 +62,12 @@ public class MainActivity extends Activity {
                 @Override
                 public void onResponse(Call<List<Comment>> call, Response<List<Comment>> response) {
                     if(SmartCache.isResponseFromNetwork(response)) {
-                        // If response is from the Internet, stop the loading circle animation
-                        swipeRefreshLayout.setRefreshing(false);
+                        runOnUiThread(() -> {
+                            swipeRefreshLayout.setRefreshing(false);
+                            Snackbar.make(swipeRefreshLayout, "Got a JSON response from https://mockbin.org/", 1000).setAnchorView(R.id.demo_list).show();
+                        });
+                    } else {
+                        // this response is preloaded from disk/RAM
                     }
 
                     List<Comment> comments = response.body();

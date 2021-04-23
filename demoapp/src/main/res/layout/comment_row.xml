@@ -5,7 +5,7 @@
     android:layout_height="wrap_content">
     <LinearLayout
         android:padding="25dp"
-        android:id="@+id/linearLayout"
+        android:id="@+id/comm_row_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
