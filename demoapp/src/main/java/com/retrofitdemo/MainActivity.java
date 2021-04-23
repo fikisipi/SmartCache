@@ -18,7 +18,7 @@ import java.util.List;
 import dimitrovskif.smartcache.BasicCaching;
 import dimitrovskif.smartcache.SmartCall;
 import dimitrovskif.smartcache.SmartCallFactory;
-import dimitrovskif.smartcache.SmartNetwork;
+import dimitrovskif.smartcache.SmartCache;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -60,8 +60,8 @@ public class MainActivity extends Activity {
             service.getComments().enqueue(new Callback<List<Comment>>() {
                 @Override
                 public void onResponse(Call<List<Comment>> call, Response<List<Comment>> response) {
-                    if(SmartNetwork.isResponseFromNetwork(response)) {
-                        // If response is not cached, stop the loading circle animation
+                    if(SmartCache.isResponseFromNetwork(response)) {
+                        // If response is from the Internet, stop the loading circle animation
                         swipeRefreshLayout.setRefreshing(false);
                     }
 
