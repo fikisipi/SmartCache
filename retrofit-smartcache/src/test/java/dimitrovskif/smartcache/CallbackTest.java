@@ -87,6 +87,10 @@ public class CallbackTest {
             }
         });
         assertTrue(latch2.await(1, TimeUnit.SECONDS));
+
+        server.enqueue(resp.clone());
+
+        assertTrue("Synchronous call works.", demoService.getHome().execute().body().length() > 0);
     }
 
     static class MainThreadExecutor implements Executor{

@@ -15,6 +15,11 @@ public class MockCachingSystem implements CachingSystem {
     }
 
     @Override
+    public void clearCache() {
+        cachedResponses.clear();
+    }
+
+    @Override
     public <T> byte[] getFromCache(Request request) {
         return cachedResponses.get(request.url().toString());
     }
