@@ -41,7 +41,7 @@ public class BasicCaching implements CachingSystem {
      * @param context
      * @return
      */
-    public static BasicCaching fromCtx(Context context){
+    public static BasicCaching buildFromContext(Context context){
         return new BasicCaching(
                 new File(context.getCacheDir(), "retrofit_smartcache"),
                 REASONABLE_DISK_SIZE,
@@ -81,6 +81,15 @@ public class BasicCaching implements CachingSystem {
             }
         }catch(IOException exc){
             return null;
+        }
+    }
+
+    public void clearCache() {
+        memoryCache.evictAll();
+        try {
+            diskCache.delete();
+        }catch(IOException exc) {
+            return;
         }
     }
 

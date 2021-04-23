@@ -3,7 +3,7 @@ package com.retrofitdemo;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.widget.SwipeRefreshLayout;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,8 +11,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+
 import java.util.List;
 
+import dimitrovskif.smartcache.BasicCaching;
 import dimitrovskif.smartcache.SmartCall;
 import dimitrovskif.smartcache.SmartCallFactory;
 import dimitrovskif.smartcache.SmartNetwork;
@@ -30,7 +33,7 @@ public class MainActivity extends Activity {
         public String body;
     }
 
-    public interface CommentAPI { // if mockbin.org is down, use your own JSON [{email, body}, ...] API
+    public interface CommentAPI {
         @GET("comments")
         SmartCall<List<Comment>> getComments();
     }
@@ -44,6 +47,10 @@ public class MainActivity extends Activity {
                 .baseUrl("https://mockbin.org/bin/ec4a0020-37d0-4221-b4fd-7002000b2019/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(SmartCallFactory.createBasic(this))
+
+                // FIXME: FOR DEMO purposes. It's artificially slowing down the Internet connection
+                // so that cache benefits are visible:
+                .client(FakeSlowConnection.create())
                 .build();
 
         CommentAPI service = retrofit.create(CommentAPI.class);
@@ -61,6 +68,7 @@ public class MainActivity extends Activity {
                     List<Comment> comments = response.body();
                     if (comments != null) {
                         runOnUiThread(() -> {
+                            commentAdapter.clear();
                             commentAdapter.addAll(comments);
                         });
                     }
@@ -76,15 +84,22 @@ public class MainActivity extends Activity {
         loadComments.run();
 
         this.swipeRefreshLayout = findViewById(R.id.swipe_refresh);
-        this.swipeRefreshLayout.setOnRefreshListener(() -> {
-            commentAdapter.clear();
-            loadComments.run();
-        });
-        this.swipeRefreshLayout.setRefreshing(true);
+        this.swipeRefreshLayout.setOnRefreshListener(loadComments::run);
+        this.swipeRefreshLayout.post(() -> swipeRefreshLayout.setRefreshing(true));
 
         this.commentAdapter = new CommentAdapter(this);
-        final ListView commentListView = findViewById(R.id.demoList);
+        final ListView commentListView = findViewById(R.id.demo_list);
         commentListView.setAdapter(commentAdapter);
+
+        /* Floating buttons to test caching */
+        ((ExtendedFloatingActionButton) findViewById(R.id.button_delete_and_reopen)).setOnClickListener((ev) -> {
+            BasicCaching.buildFromContext(getApplicationContext()).clearCache();
+            recreate();
+        });
+
+        ((ExtendedFloatingActionButton) findViewById(R.id.button_reopen)).setOnClickListener((ev) -> {
+            recreate();
+        });
     }
 
     private CommentAdapter commentAdapter = null;

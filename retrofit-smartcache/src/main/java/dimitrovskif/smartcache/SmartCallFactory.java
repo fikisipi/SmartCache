@@ -34,7 +34,7 @@ public class SmartCallFactory extends CallAdapter.Factory {
     }
 
     public static SmartCallFactory createBasic(Context ctx) {
-        return new SmartCallFactory(BasicCaching.fromCtx(ctx));
+        return new SmartCallFactory(BasicCaching.buildFromContext(ctx));
     }
 
     @Override
@@ -83,12 +83,12 @@ public class SmartCallFactory extends CallAdapter.Factory {
 
         @Override
         public boolean isExecuted() {
-            return false;
+            return baseCall.isExecuted();
         }
 
         @Override
         public boolean isCanceled() {
-            return false;
+            return baseCall.isCanceled();
         }
 
         @Override
@@ -105,24 +105,16 @@ public class SmartCallFactory extends CallAdapter.Factory {
             this.retrofit = retrofit;
             this.cachingSystem = cachingSystem;
 
-            // This one is a hack but should create a valid Response (which can later be cloned)
-            this.request = buildRequestFromCall();
+            this.request = baseCall.request();
         }
 
-        /***
-         * Inspects an OkHttp-powered Call<T> and builds a Request
-         * * @return A valid Request (that contains query parameters, right method and endpoint)
-         */
-        private Request buildRequestFromCall(){
-            return baseCall.request();
-        }
-
-        public void enqueueWithCache(final Callback<T> callback) {
+        @Override
+        public void enqueue(final Callback<T> callback) {
             Runnable enqueueRunnable = new Runnable() {
                 @Override
                 public void run() {
                     /* Read cache */
-                    byte[] data = cachingSystem.getFromCache(buildRequest());
+                    byte[] data = cachingSystem.getFromCache(request);
                     if(data != null) {
                         final T convertedData = SmartUtils.bytesToResponse(retrofit, responseType, annotations,
                                 data);
@@ -147,7 +139,7 @@ public class SmartCallFactory extends CallAdapter.Factory {
                                 public void run() {
                                     if (response.isSuccessful()) {
                                         byte[] rawData = SmartUtils.responseToBytes(retrofit, response.body(),
-                                                responseType(), annotations);
+                                                responseType, annotations);
                                         cachingSystem.addInCache(response, rawData);
                                     }
                                     callback.onResponse(call, response);
@@ -176,47 +168,8 @@ public class SmartCallFactory extends CallAdapter.Factory {
         }
 
         @Override
-        public void enqueue(final Callback<T> callback) {
-            if(buildRequest().method().equals("GET")){
-                enqueueWithCache(callback);
-            } else {
-                baseCall.enqueue(new Callback<T>() {
-                    @Override
-                    public void onResponse(final Call<T> call, final Response<T> response) {
-                        callbackExecutor.execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                callback.onResponse(call, response);
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onFailure(final Call<T> call, final Throwable t) {
-                        callbackExecutor.execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                callback.onFailure(call, t);
-                            }
-                        });
-                    }
-                });
-            }
-        }
-
-        @Override
-        public Type responseType() {
-            return responseType;
-        }
-
-        @Override
-        public Request buildRequest() {
-            return request.newBuilder().build();
-        }
-
-        @Override
         public Call<T> clone() {
-            return new SmartCallImpl<>(callbackExecutor, baseCall.clone(), responseType(),
+            return new SmartCallImpl<>(callbackExecutor, baseCall.clone(), this.responseType,
                     annotations, retrofit, cachingSystem);
         }
 
