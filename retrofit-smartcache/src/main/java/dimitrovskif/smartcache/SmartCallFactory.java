@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.concurrent.Executor;
+import java.util.function.Predicate;
 
 import okhttp3.Headers;
 import okhttp3.Request;
@@ -22,15 +23,27 @@ import retrofit2.Retrofit;
 public class SmartCallFactory extends CallAdapter.Factory {
     private final CachingSystem cachingSystem;
     private final Executor asyncExecutor;
+    private final CachingSystem.RequestFilter requestFilter;
 
-    public SmartCallFactory(CachingSystem cachingSystem){
-        this.cachingSystem = cachingSystem;
-        this.asyncExecutor = new AndroidExecutor();
+    public static final CachingSystem.RequestFilter CACHE_GET_REQUESTS = new CachingSystem.RequestFilter() {
+        @Override
+        public boolean cacheRequest(Request r) {
+            return r.method().toUpperCase().equals("GET");
+        }
+    };
+
+    public SmartCallFactory(CachingSystem cachingSystem) {
+        this(cachingSystem, new AndroidExecutor());
     }
 
-    public SmartCallFactory(CachingSystem cachingSystem, Executor executor){
+    public SmartCallFactory(CachingSystem cachingSystem, Executor executor) {
+        this(cachingSystem, executor, CACHE_GET_REQUESTS);
+    }
+
+    public SmartCallFactory(CachingSystem cachingSystem, Executor executor, CachingSystem.RequestFilter requestFilter) {
         this.cachingSystem = cachingSystem;
         this.asyncExecutor = executor;
+        this.requestFilter = requestFilter;
     }
 
     public static SmartCallFactory createBasic(Context ctx) {
@@ -39,7 +52,7 @@ public class SmartCallFactory extends CallAdapter.Factory {
 
     @Override
     public CallAdapter<?, ?> get(final Type returnType, final Annotation[] annotations,
-                                         final Retrofit retrofit) {
+                                 final Retrofit retrofit) {
         Class<?> cls = getRawType(returnType);
         if (cls != SmartCall.class) {
             return null;
@@ -62,12 +75,12 @@ public class SmartCallFactory extends CallAdapter.Factory {
             @Override
             public SmartCall<?> adapt(Call<Object> call) {
                 return new SmartCallImpl<>(callbackExecutor, call, responseType(), annotations,
-                        retrofit, cachingSystem);
+                        retrofit, cachingSystem, requestFilter);
             }
         };
     }
 
-    static class SmartCallImpl<T> implements SmartCall<T>, Call<T>{
+    static class SmartCallImpl<T> implements SmartCall<T>, Call<T> {
         private final Executor callbackExecutor;
         private final Call<T> baseCall;
         private final Type responseType;
@@ -75,6 +88,7 @@ public class SmartCallFactory extends CallAdapter.Factory {
         private final Retrofit retrofit;
         private final CachingSystem cachingSystem;
         private final Request request;
+        private final CachingSystem.RequestFilter filter;
 
         @Override
         public Timeout timeout() {
@@ -97,25 +111,32 @@ public class SmartCallFactory extends CallAdapter.Factory {
         }
 
         public SmartCallImpl(Executor callbackExecutor, Call<T> baseCall, Type responseType,
-                             Annotation[] annotations, Retrofit retrofit, CachingSystem cachingSystem){
+                             Annotation[] annotations, Retrofit retrofit, CachingSystem cachingSystem,
+                             CachingSystem.RequestFilter filter) {
             this.callbackExecutor = callbackExecutor;
             this.baseCall = baseCall;
             this.responseType = responseType;
             this.annotations = annotations;
             this.retrofit = retrofit;
             this.cachingSystem = cachingSystem;
+            this.filter = filter;
 
             this.request = baseCall.request();
         }
 
         @Override
         public void enqueue(final Callback<T> callback) {
+            if(!filter.cacheRequest(request)) {
+                baseCall.enqueue(callback);
+                return;
+            }
+
             Runnable enqueueRunnable = new Runnable() {
                 @Override
                 public void run() {
                     /* Read cache */
                     byte[] data = cachingSystem.getFromCache(request);
-                    if(data != null) {
+                    if (data != null) {
                         final T convertedData = SmartUtils.bytesToResponse(retrofit, responseType, annotations,
                                 data);
                         Runnable cacheCallbackRunnable = new Runnable() {
@@ -170,7 +191,7 @@ public class SmartCallFactory extends CallAdapter.Factory {
         @Override
         public Call<T> clone() {
             return new SmartCallImpl<>(callbackExecutor, baseCall.clone(), this.responseType,
-                    annotations, retrofit, cachingSystem);
+                    annotations, retrofit, cachingSystem, filter);
         }
 
         @Override

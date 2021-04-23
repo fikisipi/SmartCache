@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -18,6 +19,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.http.GET;
+import retrofit2.http.POST;
 
 import static org.junit.Assert.*;
 
@@ -90,6 +92,27 @@ public class CallbackTest {
 
         server.enqueue(resp.clone());
 
+        final CountDownLatch latch3 = new CountDownLatch(2);
+        final AtomicInteger postResponses = new AtomicInteger(0);
+        // final AtomicReference<Response<String>> response3Ref = new AtomicReference<>();
+        demoService.postHome().enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                log.info("Got post response");
+                postResponses.incrementAndGet();
+                latch3.countDown();
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                fail("Failure executing the request.");
+            }
+        });
+        latch3.await(1, TimeUnit.SECONDS);
+        assertEquals(1, postResponses.get());
+
+        server.enqueue(resp.clone());
+
         assertTrue("Synchronous call works.", demoService.getHome().execute().body().length() > 0);
     }
 
@@ -103,5 +126,7 @@ public class CallbackTest {
     interface DemoService{
         @GET("/")
         SmartCall<String> getHome();
+        @POST("/")
+        SmartCall<String> postHome();
     }
 }
