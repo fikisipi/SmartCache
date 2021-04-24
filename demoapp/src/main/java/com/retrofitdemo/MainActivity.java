@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.io.IOException;
 import java.util.List;
 
 import dimitrovskif.smartcache.BasicCaching;
@@ -56,32 +57,33 @@ public class MainActivity extends Activity {
 
         CommentAPI service = retrofit.create(CommentAPI.class);
 
+
         Runnable loadComments = () -> {
             // Call API and put response into a ListView
             service.getComments().enqueue(new Callback<List<Comment>>() {
                 @Override
                 public void onResponse(Call<List<Comment>> call, Response<List<Comment>> response) {
+                    List<Comment> comments = response.body();
+                    if(comments == null) { onFailure(call, new IOException("Comment API returned null.")); return; }
+
+                    runOnUiThread(() -> {
+                        commentAdapter.clear();
+                        commentAdapter.addAll(comments);
+                    });
+
                     if(SmartCache.isResponseFromNetwork(response)) {
+                        // this is an response from live API, show SnackBar and stop refresh indicator
                         runOnUiThread(() -> {
                             swipeRefreshLayout.setRefreshing(false);
                             Snackbar.make(swipeRefreshLayout, "Got a JSON response from https://mockbin.org/", 1000).setAnchorView(R.id.demo_list).show();
-                        });
-                    } else {
-                        // this response is preloaded from disk/RAM
-                    }
-
-                    List<Comment> comments = response.body();
-                    if (comments != null) {
-                        runOnUiThread(() -> {
-                            commentAdapter.clear();
-                            commentAdapter.addAll(comments);
+                            commentListView.smoothScrollToPosition(commentListView.getAdapter().getCount() - 1);
                         });
                     }
                 }
 
                 @Override
                 public void onFailure(Call<List<Comment>> call, Throwable t) {
-                    Log.w("Filip", t.getMessage());
+                    Log.w("CommentAPI", t.getMessage());
                 }
             });
         };
@@ -93,10 +95,10 @@ public class MainActivity extends Activity {
         this.swipeRefreshLayout.post(() -> swipeRefreshLayout.setRefreshing(true));
 
         this.commentAdapter = new CommentAdapter(this);
-        final ListView commentListView = findViewById(R.id.demo_list);
+        this.commentListView = findViewById(R.id.demo_list);
         commentListView.setAdapter(commentAdapter);
 
-        /* Floating buttons to test caching */
+        /* Floating buttons for demo */
         ((ExtendedFloatingActionButton) findViewById(R.id.button_delete_and_reopen)).setOnClickListener((ev) -> {
             BasicCaching.buildFromContext(getApplicationContext()).clearCache();
             recreate();
@@ -107,6 +109,7 @@ public class MainActivity extends Activity {
         });
     }
 
+    private ListView commentListView = null;
     private CommentAdapter commentAdapter = null;
     private SwipeRefreshLayout swipeRefreshLayout = null;
 
