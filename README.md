@@ -25,7 +25,7 @@ dependencies {
 }
 </pre>
 
-2. Add `SmartCallFactory` to your Retrofit `Builder`:
+2. Add `SmartCallFactory` to your Retrofit `Builder` (where `this` is an Activity/Context):
 <pre>
 Retrofit retrofit = new Retrofit.Builder()
         .baseUrl("https://your-api.org")
