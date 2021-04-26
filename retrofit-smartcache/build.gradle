@@ -29,6 +29,5 @@ dependencies {
     testImplementation 'junit:junit:4.13'
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.1'
     implementation 'com.jakewharton:disklrucache:2.0.2'
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    //compile 'com.google.guava:guava:18.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0+'
 }
