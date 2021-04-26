@@ -55,6 +55,20 @@ new Callback<YourModel>() {
        ...
 ```
 
+### Clearing cache and choosing which requests should be cached
+
+Most apps shouldn't cache stateful routes like `POST/PUT` so by default only `GET` routes are cached.
+You can change this by supplying `filter: (Request) -> bool` when creating the factory
+`SmartCallFactory.createBasic(this, filter)`.
+
+Each interface `CachingSystem` now has `void clearCache()` to delete the cache. By default,
+SmartCache uses `BasicCaching` as a LRU system, so clearing can be done like this:
+```
+BasicCaching.buildFromContext(getApplicationContext()).clearCache();
+```
+
+**💻 Check the demo app for these examples.**
+
 ### Demo app
 
 For a complete example check [demoapp/](/demoapp).
