@@ -23,7 +23,7 @@ import retrofit2.Retrofit;
 public class SmartCallFactory extends CallAdapter.Factory {
     private final CachingSystem cachingSystem;
     private final Executor asyncExecutor;
-    private final CachingSystem.RequestFilter requestFilter;
+    private CachingSystem.RequestFilter requestFilter;
 
     public static final CachingSystem.RequestFilter CACHE_GET_REQUESTS = new CachingSystem.RequestFilter() {
         @Override
@@ -48,6 +48,10 @@ public class SmartCallFactory extends CallAdapter.Factory {
 
     public static SmartCallFactory createBasic(Context ctx) {
         return new SmartCallFactory(BasicCaching.buildFromContext(ctx));
+    }
+
+    public static SmartCallFactory createBasic(Context ctx, CachingSystem.RequestFilter requestFilter) {
+        return new SmartCallFactory(BasicCaching.buildFromContext(ctx), new AndroidExecutor(), requestFilter);
     }
 
     @Override

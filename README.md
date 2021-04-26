@@ -1,6 +1,6 @@
 ![SmartCache for Retrofit2](logo.png)
 
-## SmartCache - preloaded responses for Retrofit 2 [![Build Status](https://travis-ci.org/dimitrovskif/SmartCache.svg?branch=master)](https://travis-ci.org/dimitrovskif/SmartCache)
+## SmartCache - preloaded responses for Retrofit 2 [![Build Status](https://www.travis-ci.com/fikisipi/SmartCache.svg?branch=master)](https://travis-ci.org/dimitrovskif/SmartCache)
 
 #### This library calls your callback twice: first cached, then fresh data 
 
@@ -12,17 +12,18 @@ Instead of showing an empty screen while waiting for a network response, why not
 
 ### Install and use
 
-1. Gradle installation:
-```groovy
+1. Add SmartCache to Gradle dependencies, and JitPack to repos:
+<pre>
 repositories {
     ...
-    maven { url "https://jitpack.io" }
+    maven { url "https://jitpack.io" } // <b><-- Add this!</b>
 }
     
 dependencies {
-    compile 'com.github.fikisipi:SmartCache:2.9.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.github.fikisipi:SmartCache:2.9.0' // <b><-- Add this!</b>
 }
-```
+</pre>
 
 2. Add `SmartCallFactory` to your Retrofit `Builder`:
 <pre>
