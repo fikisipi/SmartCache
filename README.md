@@ -54,13 +54,22 @@ enqueue(new Callback<YourModel>() {
     if(SmartCache.isResponseFromNetwork(response)) { ...
 ```
 
+### Demo app
+
 For a complete example check [demoapp/](/demoapp).
+
+![...](demoapp_scr.png)
 
 ### How it works
 
 ![...](how_it_works.png)
 
 One request corresponds to two responses: a cache response and a network response. Loading content from your phone is faster than loading from network; therefore your app will show stale content while waiting for a fresh network response. (*Note:* If the network response comes first, cache won't happen.)
+
+Help needed from contributors:
+
+* Make it work with RxJava
+* Implement a pool of threads
 
 ### License
 
