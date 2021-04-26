@@ -47,17 +47,19 @@ The preloaded data callback is fired before the network callback. You can check 
 `SmartCache.isResponseFromNetwork(response)`:
 
 ```java
-enqueue(new Callback<YourModel>() {
+new Callback<YourModel>() {
   @Override
-  public void onResponse(Call<List<Comment>> call, Response<List<Comment>> response) {
-    if(SmartCache.isResponseFromNetwork(response)) { ...
+  public void onResponse(Call<YourModel> call, Response<YourModel> response) {
+    if(SmartCache.isResponseFromNetwork(response)) {
+       ...
+    }
 ```
 
 For a complete example check [demoapp/](/demoapp).
 
 ### How it works
 
-![...](how_it_works.png)
+![...](works_diagram.png)
 
 One request corresponds to two responses: a cache response and a network response. Loading content from your phone is faster than loading from network; therefore your app will show stale content while waiting for a fresh network response. (*Note:* If the network response comes first, cache won't happen.)
 
