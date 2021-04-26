@@ -20,18 +20,18 @@ repositories {
 }
     
 dependencies {
-    compile 'com.github.dimitrovskif:SmartCache:2.9.0'
+    compile 'com.github.fikisipi:SmartCache:2.9.0'
 }
 ```
 
 2. Add `SmartCallFactory` to your Retrofit `Builder`:
-```java
+<pre>
 Retrofit retrofit = new Retrofit.Builder()
         .baseUrl("https://your-api.org")
         .addConverterFactory(GsonConverterFactory.create())
-        .addCallAdapterFactory(SmartCallFactory.createBasic(this)) // <-- Add this!
+        .addCallAdapterFactory(SmartCallFactory.createBasic(this)) // <b><-- Add this!</b>
         .build();
- ```
+</pre>
  
 3. Replace `Call<T>` with `SmartCall<T>`.
 ```java
@@ -52,7 +52,6 @@ new Callback<YourModel>() {
   public void onResponse(Call<YourModel> call, Response<YourModel> response) {
     if(SmartCache.isResponseFromNetwork(response)) {
        ...
-    }
 ```
 
 For a complete example check [demoapp/](/demoapp).
