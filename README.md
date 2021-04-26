@@ -20,7 +20,7 @@ repositories {
 }
     
 dependencies {
-    compile 'com.github.dimitrovskif:SmartCache:0.2'
+    compile 'com.github.dimitrovskif:SmartCache:2.9.0'
 }
 ```
 
