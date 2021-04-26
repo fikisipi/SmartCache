@@ -1,6 +1,6 @@
 ![SmartCache for Retrofit2](logo.png)
 
-## SmartCache - preloaded responses for Retrofit 2 [![Build Status](https://www.travis-ci.com/fikisipi/SmartCache.svg?branch=master)](https://travis-ci.org/fikisipi/SmartCache)
+## SmartCache - preloaded responses for Retrofit 2 [![Build Status](https://www.travis-ci.com/fikisipi/SmartCache.svg?branch=master)](https://travis-ci.com/fikisipi/SmartCache)
 
 #### This library calls your callback twice: first cached, then fresh data 
 
