@@ -2,9 +2,9 @@
 
 ## SmartCache - preloaded responses for Retrofit 2 [![Build Status](https://www.travis-ci.com/fikisipi/SmartCache.svg?branch=master)](https://travis-ci.com/fikisipi/SmartCache)
 
-#### This library calls your callback twice: first cached, then fresh data 
+#### This library calls your callback twice: first cached, then fresh data
 
-Instead of showing an empty screen while waiting for a network response, why not load the latest successful response from storage? 
+Instead of showing an empty screen while waiting for a network response, why not load the latest successful response from storage?
 
 * Responses are saved in device storage & RAM
 * No extra logic, only `Call<T>` becomes `SmartCall<T>`
@@ -13,32 +13,36 @@ Instead of showing an empty screen while waiting for a network response, why not
 ### Install and use
 
 1. Add SmartCache to Gradle dependencies, and JitPack to repos:
-<pre>
+```gradle
 repositories {
     ...
-    maven { url "https://jitpack.io" } // <b><-- Add this!</b>
+    maven { url "https://jitpack.io" }
+                 ^^^^^^^^^^^^^^^^^^^ ⚡Add this!
 }
-    
+
 dependencies {
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation 'com.github.fikisipi:SmartCache:2.9.0' // <b><-- Add this!</b>
+    implementation 'com.github.fikisipi:SmartCache:2.9.0'
+                    ^^^^^^^^^^^^^^^^^^^ ⚡Add this!
 }
-</pre>
+```
 
 2. Add `SmartCallFactory` to your Retrofit `Builder` (where `this` is an Activity/Context):
-<pre>
+```java
 Retrofit retrofit = new Retrofit.Builder()
         .baseUrl("https://your-api.org")
         .addConverterFactory(GsonConverterFactory.create())
-        .addCallAdapterFactory(SmartCallFactory.createBasic(this)) // <b><-- Add this!</b>
+        .addCallAdapterFactory(SmartCallFactory.createBasic(this))
+                               ^^^^^^^^^^^^^^^^ ⚡Add this!
         .build();
-</pre>
- 
+```
+
 3. Replace `Call<T>` with `SmartCall<T>`.
 ```java
 public interface GitHubService {
   @GET("/users/{user}/repos")
   SmartCall<List<Repo>> listRepos(@Path("user") String user);
+  ^^^^^^^^^ ⚡ Swap from Call<T> to SmartCall<T>
 }
 ```
 
