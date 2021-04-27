@@ -37,18 +37,18 @@ Retrofit retrofit = new Retrofit.Builder()
         .build();
 ```
 
-3. Replace `Call<T>` with `SmartCall<T>`.
+3. Replace `Call<T>` with `SmartCall<T>` and you are **done ✔️**.
 ```java
 public interface GitHubService {
   @GET("/users/{user}/repos")
   SmartCall<List<Repo>> listRepos(@Path("user") String user);
-  ^^^^^^^^^ ⚡ Swap from Call<T> to SmartCall<T>
+  ^^^^^^^^^ ⚡ Rename Call to SmartCall
 }
 ```
 
 ### Checking if the callback data is preloaded
 
-The preloaded data callback is fired before the network callback. You can check which is which using
+Every `enqueue()` callback is fired with preloaded data before the network invokes the callback. You can check which is which using
 `SmartCache.isResponseFromNetwork(response)`:
 
 ```java
