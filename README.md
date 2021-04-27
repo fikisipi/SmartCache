@@ -87,8 +87,8 @@ One request corresponds to two responses: a cache response and a network respons
 
 Help needed from contributors:
 
-* Make it work with RxJava
-* Implement a pool of threads
+- [ ] Make it work with RxJava
+- [ ] Implement a pool of threads
 
 ### License
 
