@@ -16,13 +16,13 @@ Instead of showing an empty screen while waiting for a network response, why not
 ```gradle
 repositories {
     maven { url "https://jitpack.io" }
-//               ^^^^^^^^^^^^^^^^^^^ ⚡Add this!
+//               ^^^^^^^^^^^^^^^^^^^ Add this!
 }
 
 dependencies {
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.github.fikisipi:SmartCache:2.9.0'
-//                  ^^^^^^^^^^^^^^^^^^^ ⚡Add this!
+//                  ^^^^^^^^^^^^^^^^^^^ Add this!
 }
 ```
 
@@ -32,7 +32,7 @@ Retrofit retrofit = new Retrofit.Builder()
         .baseUrl("https://your-api.org")
         .addConverterFactory(GsonConverterFactory.create())
         .addCallAdapterFactory(SmartCallFactory.createBasic(this))
-//                             ^^^^^^^^^^^^^^^^ ⚡Add this!
+//                             ^^^^^^^^^^^^^^^^ Add this!
         .build();
 ```
 
@@ -41,7 +41,7 @@ Retrofit retrofit = new Retrofit.Builder()
 public interface GitHubService {
    @GET("/users/{user}/repos")
    SmartCall<List<Repo>> listRepos(@Path("user") String user);
-// ^^^^^^^^^ ⚡ Rename Call to SmartCall
+// ^^^^^^^^^  Rename `Call` to `SmartCall`
 }
 ```
 
