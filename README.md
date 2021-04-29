@@ -15,7 +15,6 @@ Instead of showing an empty screen while waiting for a network response, why not
 1. Add SmartCache to Gradle dependencies, and JitPack to repos:
 ```gradle
 repositories {
-    ...
     maven { url "https://jitpack.io" }
                  ^^^^^^^^^^^^^^^^^^^ ⚡Add this!
 }
@@ -56,7 +55,6 @@ new Callback<YourModel>() {
   @Override
   public void onResponse(Call<YourModel> call, Response<YourModel> response) {
     if(SmartCache.isResponseFromNetwork(response)) {
-       ...
 ```
 
 ### Clearing cache and choosing which requests should be cached
